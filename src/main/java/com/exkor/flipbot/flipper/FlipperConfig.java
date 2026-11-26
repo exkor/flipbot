@@ -1,0 +1,303 @@
+package com.exkor.flipbot.flipper;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import net.fabricmc.loader.api.FabricLoader;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
+public class FlipperConfig {
+    public double taxPercent = 1.25;
+    public int maxOrders = 14;
+    public long reserveCoins = 1_000_000L;
+    public double minMarginPercent = 0.5;
+    public double maxMarginPercent = 25.0;
+    public double minBuyOrderMarginPercent = 5.0;
+    public double maxPriceDeviationPercent = 30.0;
+    public double maxHistoricalDeviationPercent = 50.0;
+    public double minHistoryVolume = 20.0;
+    public boolean requireHistoricalPrice = true;
+    public double referencePriceMillions = 10.0;
+    public int sessionMinutes = 0;
+    public int pauseMinutes = 5;
+    public long minWeeklyVolume = 168L;
+    public double minUnitCoins = 600_000.0;
+    public double minOrderCoins = 10_000_000.0;
+    public double maxBankFractionPerItem = 0.5;
+    /**
+     * Hard cap of coins put into ONE item (buy order value = qty x price).
+     * 0 = no limit (only maxBankFractionPerItem applies). Items whose single
+     * unit is more expensive than this are skipped.
+     */
+    public double maxCoinsPerItem = 0.0;
+    public double minUnitPrice = 10.0;
+    public double beta = 1.0;
+    public double undercutCheckMinutes = 10.0;
+    public double undercutSeedFactor = 0.05;
+    public double activeHours = 4.0;
+    public double limitBudgetCoins = 15_000_000_000.0;
+    public double limitFillTarget = 0.85;
+    public double blacklistMinutes = 5.0;
+    public double maxLiquidityShare = 0.25;
+    public double coinsPerHourWeight = 1.6;
+    public double minCoinsPerHour = 0.0;
+    public double profitPercentWeight = 1.4;
+    public int cycleIntervalSeconds = 15;
+    public int apiRefreshSeconds = 5;
+    public int maxNewOrdersPerCycle = 3;
+    public int outbidCyclesBeforeCancel = 2;
+    public double cancelOrderAgeDays = 6.0;
+    public double kellyLossVolatilityPercent = 2.0;
+    public double stakeMultiplier = 2.0;
+    public List<String> blacklist = new ArrayList<>();
+    /** Sell offers worth this much per session (millions, 0 = off), then only selling. */
+    public double maxCoinsPerSessionMillions = 0;
+    /** Bankroll = the whole purse minus the reserve, read live from the scoreboard. Off: maxInvestedMillions caps it. */
+    public boolean investFromPurse = true;
+    /** Buy orders + sell offers on the Bazaar together at most (millions, 0 = off). Only used with investFromPurse off. */
+    public double maxInvestedMillions = 0;
+    /** Item mode: flip only the items in {@link #onlyItems}. */
+    public boolean onlyItemsMode = false;
+    public List<String> onlyItems = new ArrayList<>();
+    public Map<String, String> searchNameOverrides = new HashMap<>();
+    /** Bazaar flips screen: rows shown, rescan interval and sort order (CPH, MARGIN, PROFIT, SCORE). */
+    public int flipsTopCount = 10;
+    public int flipsRefreshMinutes = 3;
+    public String flipsSort = "CPH";
+    /** Wait before each order action. */
+    public long actionDelayMs = 1000L;
+    /** Only trade with profit already made: never more coins in the Bazaar than the profit (your own coins are never used). */
+    public boolean tradeWithProfitOnly = true;
+    /** Never place or relist a sell offer below what the item cost plus tax (it waits instead). */
+    public boolean onlySellAtProfit = true;
+    /** No new buy orders while the bot still holds unsold items it bought: buy a batch, sell all of it, repeat. */
+    public boolean finishBatchFirst = true;
+    /** Practice mode (default): walk the menus up to the confirm screen, back out, simulate the order. */
+    public boolean practiceMode = true;
+    /** Menu size, animations, and the status HUD while the bot runs. */
+    public double uiScale = 1.0;
+    public boolean uiAnimations = true;
+    public boolean hudEnabled = true;
+    public int configVersion = 0;
+
+    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    private static final int CURRENT_CONFIG_VERSION = 2;
+
+    private static Path file() {
+        return FabricLoader.getInstance().getConfigDir().resolve("flipbot").resolve("flipper.json");
+    }
+
+    public boolean isBlocked(String productId, String displayName) {
+        if (blacklist == null || blacklist.isEmpty()) {
+            return false;
+        }
+        String id = normalize(productId);
+        String name = normalize(displayName);
+        for (String entry : blacklist) {
+            String blocked = normalize(entry);
+            if (blocked.isEmpty()) {
+                continue;
+            }
+            if ((!id.isEmpty() && id.contains(blocked))
+                    || (!name.isEmpty() && name.contains(blocked))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean addBlocked(String value) {
+        String display = value == null ? "" : value.trim();
+        if (display.isEmpty()) {
+            return false;
+        }
+        if (blacklist == null) {
+            blacklist = new ArrayList<>();
+        }
+        String normalized = normalize(display);
+        for (String entry : blacklist) {
+            if (normalize(entry).equals(normalized)) {
+                return false;
+            }
+        }
+        blacklist.add(display);
+        return true;
+    }
+
+    /**
+     * Item mode: adds the exact Bazaar product(s) meant by {@code value} ("recomb" ->
+     * "Recombobulator 3000") and reports in chat what was added. The typed text itself is never
+     * stored: buying, searching and order handling work with the real product name.
+     */
+    public boolean addOnlyItem(String value) {
+        String typed = value == null ? "" : value.trim();
+        if (typed.isEmpty()) {
+            return false;
+        }
+        if (onlyItems == null) {
+            onlyItems = new ArrayList<>();
+        }
+
+        List<String> resolved = com.exkor.flipbot.flipper.trading.BazaarLimits.resolveItem(typed,
+                FlipperMod.marketSnapshot());
+        String prefix = "\u00a76[Bazaar item mode] ";
+        if (resolved.isEmpty()) {
+            FlipperMod.message(prefix + "\u00a7cNo Bazaar item found: \u00a7f" + typed);
+            return false;
+        }
+        if (resolved.size() > 8) {
+            FlipperMod.message(prefix + "\u00a7c" + resolved.size() + " matches for \u00a7f" + typed
+                    + "\u00a7c - be more specific, e.g.: \u00a7f" + String.join(", ", resolved.subList(0, 5)));
+            return false;
+        }
+        List<String> added = new ArrayList<>();
+        for (String name : resolved) {
+            String normalized = normalize(name);
+            if (onlyItems.stream().noneMatch(entry -> normalize(entry).equals(normalized))) {
+                onlyItems.add(name);
+                added.add(name);
+            }
+        }
+        if (added.isEmpty()) {
+            FlipperMod.message(prefix + "\u00a7eAlready in the list: \u00a7f" + String.join(", ", resolved));
+            return false;
+        }
+        boolean same = added.size() == 1 && normalize(added.get(0)).equals(normalize(typed));
+        FlipperMod.message(prefix + "\u00a7aAdded: \u00a7f" + String.join(", ", added)
+                + (same ? "" : " \u00a77(from '" + typed + "')"));
+        return true;
+    }
+
+    public boolean removeOnlyItem(String value) {
+        if (onlyItems == null || value == null) {
+            return false;
+        }
+        String normalized = normalize(value);
+        return onlyItems.removeIf(entry -> normalize(entry).equals(normalized));
+    }
+
+    public boolean removeBlocked(String value) {
+        if (blacklist == null || value == null) {
+            return false;
+        }
+        String normalized = normalize(value);
+        return blacklist.removeIf(entry -> normalize(entry).equals(normalized));
+    }
+
+    private static String normalize(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.replaceAll("(?i)\u00a7[0-9A-FK-OR]", "").trim().toLowerCase(Locale.ROOT);
+    }
+
+    public static FlipperConfig load() {
+        try {
+            Path path = file();
+            if (Files.exists(path)) {
+                FlipperConfig loaded;
+                try {
+                    loaded = GSON.fromJson(Files.readString(path), FlipperConfig.class);
+                } catch (Exception parseError) {
+                    Path broken = path.resolveSibling(path.getFileName()
+                            + ".broken-" + System.currentTimeMillis());
+                    try {
+                        Files.copy(path, broken,
+                                java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                    } catch (Exception ignored) {
+                    }
+                    System.out.println("[Flipper] Config broken, backup: " + broken
+                            + " (" + parseError.getMessage() + ")");
+                    return new FlipperConfig();
+                }
+                if (loaded != null) {
+                    if (loaded.apiRefreshSeconds > 5) {
+                        loaded.apiRefreshSeconds = 5;
+                    }
+                    if (loaded.cycleIntervalSeconds > 15) {
+                        loaded.cycleIntervalSeconds = 15;
+                    }
+                    if (loaded.maxOrders > 14) {
+                        loaded.maxOrders = 14;
+                    }
+                    if (loaded.maxNewOrdersPerCycle < 1) {
+                        loaded.maxNewOrdersPerCycle = 3;
+                    }
+                    if (loaded.minUnitCoins < 0) {
+                        loaded.minUnitCoins = 0;
+                    }
+                    if (loaded.minOrderCoins < 0) {
+                        loaded.minOrderCoins = 0;
+                    }
+                    if (loaded.maxBankFractionPerItem <= 0 || loaded.maxBankFractionPerItem > 1) {
+                        loaded.maxBankFractionPerItem = 0.5;
+                    }
+                    if (loaded.maxCoinsPerItem < 0) {
+                        loaded.maxCoinsPerItem = 0.0;
+                    }
+                    if (loaded.beta <= 0) {
+                        loaded.beta = 1.0;
+                    }
+                    if (loaded.undercutCheckMinutes <= 0) {
+                        loaded.undercutCheckMinutes = 10.0;
+                    }
+                    if (loaded.blacklistMinutes <= 0) {
+                        loaded.blacklistMinutes = 5.0;
+                    }
+                    if (loaded.maxHistoricalDeviationPercent < 10.0) {
+                        loaded.maxHistoricalDeviationPercent = 50.0;
+                    }
+                    if (loaded.minHistoryVolume < 1.0) {
+                        loaded.minHistoryVolume = 20.0;
+                    }
+                    if (loaded.coinsPerHourWeight <= 0) {
+                        loaded.coinsPerHourWeight = 1.6;
+                    }
+                    if (!Double.isFinite(loaded.minCoinsPerHour) || loaded.minCoinsPerHour < 0) {
+                        loaded.minCoinsPerHour = 0.0;
+                    }
+                    if (loaded.profitPercentWeight <= 0) {
+                        loaded.profitPercentWeight = 1.4;
+                    }
+                    if (loaded.blacklist == null) {
+                        loaded.blacklist = new ArrayList<>();
+                    }
+                    loaded.configVersion = CURRENT_CONFIG_VERSION;
+                    return loaded;
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        FlipperConfig defaults = new FlipperConfig();
+        defaults.configVersion = CURRENT_CONFIG_VERSION;
+        return defaults;
+    }
+
+    public void save() {
+        try {
+            Path path = file();
+            Files.createDirectories(path.getParent());
+            Path temp = path.resolveSibling(path.getFileName() + ".tmp");
+            Files.writeString(temp, GSON.toJson(this),
+                    java.nio.charset.StandardCharsets.UTF_8);
+            try {
+                Files.move(temp, path,
+                        java.nio.file.StandardCopyOption.REPLACE_EXISTING,
+                        java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+            } catch (java.nio.file.AtomicMoveNotSupportedException e) {
+                Files.move(temp, path,
+                        java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (Exception e) {
+            System.out.println("[Flipper] Saving the config failed: "
+                    + e.getMessage());
+        }
+    }
+}

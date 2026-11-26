@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "flipbot",
+  "version": "${version}",
+  "name": "FlipBot",
+  "description": "Bazaar flipping bot.",
+  "authors": ["exkor"],
+  "environment": "client",
+  "entrypoints": {
+    "client": ["com.exkor.flipbot.FlipBotClient"]
+  },
+  "mixins": ["flipbot.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.20.1",
+    "minecraft": "${minecraft_range}",
+    "java": ">=25",
+    "fabric-api": "*",
+    "fabric-language-kotlin": ">=1.14.2"
+  }
+}

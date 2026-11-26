@@ -1,0 +1,1122 @@
+{
+    "AOTE_STONE":  {
+                       "min":  4743110,
+                       "median":  5252144,
+                       "mean":  5761178.0,
+                       "mode":  5761178,
+                       "volume":  15.0,
+                       "max":  5761180
+                   },
+    "BOOSTER_COOKIE":  {
+                           "min":  13500001,
+                           "median":  13807466,
+                           "mean":  14028230.0,
+                           "mode":  13949999,
+                           "volume":  4456.0,
+                           "max":  14775858
+                       },
+    "BRAIN_FOOD":  {
+                       "min":  2151751,
+                       "median":  2426735,
+                       "mean":  2703934.0,
+                       "mode":  2701718,
+                       "volume":  215.0,
+                       "max":  2762827
+                   },
+    "BURROWING_SPORES":  {
+                             "min":  4687696,
+                             "median":  4910878,
+                             "mean":  5154800.0,
+                             "mode":  5134057,
+                             "volume":  29.0,
+                             "max":  5299994
+                         },
+    "CAPSAICIN_EYEDROPS_NO_CHARGES":  {
+                                          "min":  1400004,
+                                          "median":  1601803,
+                                          "mean":  1803603.0,
+                                          "mode":  1803600,
+                                          "volume":  305.0,
+                                          "max":  1803604
+                                      },
+    "CELESTIAL_MASON_JAR":  {
+                                "min":  428086,
+                                "median":  691543,
+                                "mean":  1989614.0,
+                                "mode":  902308,
+                                "volume":  91.0,
+                                "max":  7300000
+                            },
+    "COLOSSAL_EXP_BOTTLE":  {
+                                "min":  2099304,
+                                "median":  2279615,
+                                "mean":  2456420.0,
+                                "mode":  2423863,
+                                "volume":  1390.0,
+                                "max":  2499998
+                            },
+    "CONDENSED_FERMENTO":  {
+                               "min":  2195065,
+                               "median":  2253628,
+                               "mean":  2307798.0,
+                               "mode":  2312190,
+                               "volume":  264.0,
+                               "max":  2312191
+                           },
+    "CONDENSED_HELIANTHUS":  {
+                                 "min":  2600000,
+                                 "median":  4000034,
+                                 "mean":  4507749.0,
+                                 "mode":  4499999,
+                                 "volume":  382.0,
+                                 "max":  4562000
+                             },
+    "CORLEONITE":  {
+                       "min":  906855,
+                       "median":  962241,
+                       "mean":  1009256.0,
+                       "mode":  991640,
+                       "volume":  395.0,
+                       "max":  1050000
+                   },
+    "DEEP_SEA_ORB":  {
+                         "min":  10000003,
+                         "median":  11250001,
+                         "mean":  12860083.0,
+                         "mode":  12499999,
+                         "volume":  85.0,
+                         "max":  13940338
+                     },
+    "DISTANT_ECHO":  {
+                         "min":  907007,
+                         "median":  977347,
+                         "mean":  1047687.0,
+                         "mode":  1047687,
+                         "volume":  133.0,
+                         "max":  1047687
+                     },
+    "DIVAN_POWDER_COATING":  {
+                                 "min":  62538404,
+                                 "median":  64885000,
+                                 "mean":  65772460.0,
+                                 "mode":  65769999,
+                                 "volume":  41.0,
+                                 "max":  65774924
+                             },
+    "DIVER_FRAGMENT":  {
+                           "min":  1889572,
+                           "median":  2071197,
+                           "mean":  2348275.0,
+                           "mode":  2596535,
+                           "volume":  2573.0,
+                           "max":  2596536
+                       },
+    "DIVINE_GIFT":  {
+                        "min":  20217210,
+                        "median":  20766658,
+                        "mean":  21250617.0,
+                        "mode":  21316106,
+                        "volume":  71.0,
+                        "max":  21706354
+                    },
+    "DRAGON_CLAW":  {
+                        "min":  1800004,
+                        "median":  1965812,
+                        "mean":  2249674.0,
+                        "mode":  2121623,
+                        "volume":  344.0,
+                        "max":  2596380
+                    },
+    "DRILL_ENGINE":  {
+                         "min":  4953987,
+                         "median":  5171068,
+                         "mean":  5530814.0,
+                         "mode":  6499997,
+                         "volume":  765.0,
+                         "max":  6499999
+                     },
+    "ECCENTRIC_PAINTING":  {
+                               "min":  16120916,
+                               "median":  17115457,
+                               "mean":  18109999.0,
+                               "mode":  18109999,
+                               "volume":  102.0,
+                               "max":  18110000
+                           },
+    "ENCHANTED_BLAZE_ROD":  {
+                                "min":  624973,
+                                "median":  635737,
+                                "mean":  648637.0,
+                                "mode":  646498,
+                                "volume":  2146.0,
+                                "max":  654995
+                            },
+    "ENCHANTED_COMPOST":  {
+                              "min":  910357,
+                              "median":  966907,
+                              "mean":  1081486.0,
+                              "mode":  1498998,
+                              "volume":  266.0,
+                              "max":  1498999
+                          },
+    "ENCHANTMENT_ABSORB_1":  {
+                                 "min":  4535447,
+                                 "median":  5029036,
+                                 "mean":  5556956.0,
+                                 "mode":  5522626,
+                                 "volume":  95.0,
+                                 "max":  5875093
+                             },
+    "ENCHANTMENT_CHAMPION_1":  {
+                                   "min":  4550870,
+                                   "median":  4904834,
+                                   "mean":  5371111.0,
+                                   "mode":  5225086,
+                                   "volume":  170.0,
+                                   "max":  5517138
+                               },
+    "ENCHANTMENT_COMPACT_1":  {
+                                  "min":  4449356,
+                                  "median":  4868178,
+                                  "mean":  5287224.0,
+                                  "mode":  5286999,
+                                  "volume":  66.0,
+                                  "max":  5287902
+                              },
+    "ENCHANTMENT_CULTIVATING_1":  {
+                                      "min":  4354660,
+                                      "median":  4581162,
+                                      "mean":  4832831.0,
+                                      "mode":  4857998,
+                                      "volume":  99.0,
+                                      "max":  4857998
+                                  },
+    "ENCHANTMENT_DEDICATION_3":  {
+                                     "min":  1600000,
+                                     "median":  1761998,
+                                     "mean":  1923995.0,
+                                     "mode":  1923994,
+                                     "volume":  106.0,
+                                     "max":  1923996
+                                 },
+    "ENCHANTMENT_FEAST_1":  {
+                                "min":  1600004,
+                                "median":  1786002,
+                                "mean":  1972968.0,
+                                "mode":  1971998,
+                                "volume":  663.0,
+                                "max":  2013332
+                            },
+    "ENCHANTMENT_GREEN_THUMB_1":  {
+                                      "min":  1422814,
+                                      "median":  1617740,
+                                      "mean":  1812665.0,
+                                      "mode":  1812663,
+                                      "volume":  691.0,
+                                      "max":  1812668
+                                  },
+    "ENCHANTMENT_GROWTH_6":  {
+                                 "min":  2400000,
+                                 "median":  2675802,
+                                 "mean":  2948206.0,
+                                 "mode":  2899999,
+                                 "volume":  278.0,
+                                 "max":  3012883
+                             },
+    "ENCHANTMENT_HARVESTING_6":  {
+                                     "min":  958917,
+                                     "median":  1087209,
+                                     "mean":  1260905.0,
+                                     "mode":  1244008,
+                                     "volume":  2663.0,
+                                     "max":  1399995
+                                 },
+    "ENCHANTMENT_HECATOMB_1":  {
+                                   "min":  6732037,
+                                   "median":  7187246,
+                                   "mean":  7619694.0,
+                                   "mode":  7642455,
+                                   "volume":  118.0,
+                                   "max":  7642455
+                               },
+    "ENCHANTMENT_ICE_COLD_1":  {
+                                   "min":  2500000,
+                                   "median":  3746078,
+                                   "mean":  4117794.0,
+                                   "mode":  3892156,
+                                   "volume":  1414.0,
+                                   "max":  4500000
+                               },
+    "ENCHANTMENT_LOOTING_NEW_7":  {
+                                      "min":  43595884,
+                                      "median":  46797939,
+                                      "mean":  49924172.0,
+                                      "mode":  48783204,
+                                      "volume":  223.0,
+                                      "max":  51054900
+                                  },
+    "ENCHANTMENT_OVERLOAD_1":  {
+                                   "min":  744300,
+                                   "median":  827704,
+                                   "mean":  909022.0,
+                                   "mode":  911106,
+                                   "volume":  2422.0,
+                                   "max":  911110
+                               },
+    "ENCHANTMENT_PROTECTION_6":  {
+                                     "min":  2610000,
+                                     "median":  3120004,
+                                     "mean":  3566244.0,
+                                     "mode":  3527990,
+                                     "volume":  174.0,
+                                     "max":  3629997
+                                 },
+    "ENCHANTMENT_STRONG_MANA_5":  {
+                                      "min":  1950123,
+                                      "median":  2052820,
+                                      "mean":  2161787.0,
+                                      "mode":  2178334,
+                                      "volume":  532.0,
+                                      "max":  2178337
+                                  },
+    "ENCHANTMENT_TOXOPHILITE_1":  {
+                                      "min":  4335541,
+                                      "median":  4820512,
+                                      "mean":  5305482.0,
+                                      "mode":  5305482,
+                                      "volume":  121.0,
+                                      "max":  5305483
+                                  },
+    "ENCHANTMENT_ULTIMATE_BOBBIN_TIME_3":  {
+                                               "min":  67000008,
+                                               "median":  69834478,
+                                               "mean":  72765874.0,
+                                               "mode":  72999000,
+                                               "volume":  37.0,
+                                               "max":  76000000
+                                           },
+    "ENCHANTMENT_ULTIMATE_CHIMERA_1":  {
+                                           "min":  30000000,
+                                           "median":  30893025,
+                                           "mean":  31771870.0,
+                                           "mode":  31700995,
+                                           "volume":  134.0,
+                                           "max":  31889996
+                                       },
+    "ENCHANTMENT_ULTIMATE_HABANERO_TACTICS_4":  {
+                                                    "min":  105000000,
+                                                    "median":  108377627,
+                                                    "mean":  110574374.0,
+                                                    "mode":  110574374,
+                                                    "volume":  25.0,
+                                                    "max":  110574376
+                                                },
+    "ENCHANTMENT_ULTIMATE_SOUL_EATER_1":  {
+                                              "min":  920101,
+                                              "median":  1019544,
+                                              "mean":  1111592.0,
+                                              "mode":  1099091,
+                                              "volume":  2192.0,
+                                              "max":  1119497
+                                          },
+    "ENCHANTMENT_ULTIMATE_WISDOM_5":  {
+                                          "min":  3000000,
+                                          "median":  3240790,
+                                          "mean":  3481579.0,
+                                          "mode":  3481580,
+                                          "volume":  129.0,
+                                          "max":  3481581
+                                      },
+    "ENDSTONE_IDOL":  {
+                          "min":  21946868,
+                          "median":  23096902,
+                          "mean":  24219623.0,
+                          "mode":  24246936,
+                          "volume":  26.0,
+                          "max":  24246938
+                      },
+    "ENSNARED_SNAIL":  {
+                           "min":  1000016,
+                           "median":  1449497,
+                           "mean":  1672783.0,
+                           "mode":  1698996,
+                           "volume":  236.0,
+                           "max":  1698998
+                       },
+    "FIFTH_MASTER_STAR":  {
+                              "min":  87360024,
+                              "median":  89461532,
+                              "mean":  91510503.0,
+                              "mode":  91563042,
+                              "volume":  25.0,
+                              "max":  91563040
+                          },
+    "FIRST_MASTER_STAR":  {
+                              "min":  15500010,
+                              "median":  16229008,
+                              "mean":  17154376.0,
+                              "mode":  17299998,
+                              "volume":  154.0,
+                              "max":  17972858
+                          },
+    "FLAWLESS_AMBER_GEM":  {
+                               "min":  2446891,
+                               "median":  2548102,
+                               "mean":  2646773.0,
+                               "mode":  2649308,
+                               "volume":  1221.0,
+                               "max":  2649313
+                           },
+    "FLAWLESS_AMETHYST_GEM":  {
+                                  "min":  2116224,
+                                  "median":  2266908,
+                                  "mean":  2417591.0,
+                                  "mode":  2417591,
+                                  "volume":  468.0,
+                                  "max":  2417592
+                              },
+    "FLAWLESS_AQUAMARINE_GEM":  {
+                                    "min":  2961909,
+                                    "median":  3019697,
+                                    "mean":  3065241.0,
+                                    "mode":  3075603,
+                                    "volume":  254.0,
+                                    "max":  3075606
+                                },
+    "FLAWLESS_CITRINE_GEM":  {
+                                 "min":  2969211,
+                                 "median":  3018794,
+                                 "mean":  3060618.0,
+                                 "mode":  3060000,
+                                 "volume":  728.0,
+                                 "max":  3074946
+                             },
+    "FLAWLESS_JADE_GEM":  {
+                              "min":  2444156,
+                              "median":  2564006,
+                              "mean":  2649263.0,
+                              "mode":  2601744,
+                              "volume":  1141.0,
+                              "max":  2656055
+                          },
+    "FLAWLESS_JASPER_GEM":  {
+                                "min":  3237358,
+                                "median":  3413499,
+                                "mean":  3554132.0,
+                                "mode":  3575584,
+                                "volume":  540.0,
+                                "max":  3575588
+                            },
+    "FLAWLESS_ONYX_GEM":  {
+                              "min":  2977277,
+                              "median":  3028897,
+                              "mean":  3079226.0,
+                              "mode":  3080516,
+                              "volume":  381.0,
+                              "max":  3080518
+                          },
+    "FLAWLESS_OPAL_GEM":  {
+                              "min":  1994220,
+                              "median":  2166638,
+                              "mean":  2359276.0,
+                              "mode":  2339054,
+                              "volume":  211.0,
+                              "max":  2419942
+                          },
+    "FLAWLESS_PERIDOT_GEM":  {
+                                 "min":  2975192,
+                                 "median":  3017851,
+                                 "mean":  3056997.0,
+                                 "mode":  3060507,
+                                 "volume":  893.0,
+                                 "max":  3069999
+                             },
+    "FLAWLESS_RUBY_GEM":  {
+                              "min":  1906981,
+                              "median":  2078663,
+                              "mean":  2187003.0,
+                              "mode":  2186994,
+                              "volume":  701.0,
+                              "max":  2187049
+                          },
+    "FLAWLESS_SAPPHIRE_GEM":  {
+                                  "min":  2412602,
+                                  "median":  2473192,
+                                  "mean":  2533780.0,
+                                  "mode":  2533780,
+                                  "volume":  341.0,
+                                  "max":  2533781
+                              },
+    "FLAWLESS_TOPAZ_GEM":  {
+                               "min":  2527954,
+                               "median":  2614925,
+                               "mean":  2699212.0,
+                               "mode":  2701893,
+                               "volume":  548.0,
+                               "max":  2701895
+                           },
+    "FLYCATCHER_UPGRADE":  {
+                               "min":  11000000,
+                               "median":  19499999,
+                               "mean":  21020044.0,
+                               "mode":  20999998,
+                               "volume":  145.0,
+                               "max":  21053454
+                           },
+    "FORESTS_FAVOR":  {
+                          "min":  932012,
+                          "median":  976642,
+                          "mean":  1023751.0,
+                          "mode":  1021272,
+                          "volume":  93.0,
+                          "max":  1042217
+                      },
+    "FOURTH_MASTER_STAR":  {
+                               "min":  65000000,
+                               "median":  66653243,
+                               "mean":  68306485.0,
+                               "mode":  68306483,
+                               "volume":  67.0,
+                               "max":  68306488
+                           },
+    "FREE_WILL":  {
+                      "min":  3415002,
+                      "median":  3609418,
+                      "mean":  3730868.0,
+                      "mode":  3483847,
+                      "volume":  195.0,
+                      "max":  3830968
+                  },
+    "FRESHLY_MINTED_COINS":  {
+                                 "min":  2960050,
+                                 "median":  3147773,
+                                 "mean":  3271105.0,
+                                 "mode":  3295546,
+                                 "volume":  448.0,
+                                 "max":  3295553
+                             },
+    "FUMING_POTATO_BOOK":  {
+                               "min":  1389999,
+                               "median":  1458525,
+                               "mean":  1523732.0,
+                               "mode":  1537899,
+                               "volume":  1879.0,
+                               "max":  1553253
+                           },
+    "GEMSTONE_MIXTURE":  {
+                             "min":  1881423,
+                             "median":  1954739,
+                             "mean":  1994563.0,
+                             "mode":  2026894,
+                             "volume":  1186.0,
+                             "max":  2039995
+                         },
+    "GIANT_FRAGMENT_DIAMOND":  {
+                                   "min":  635721,
+                                   "median":  669114,
+                                   "mean":  701340.0,
+                                   "mode":  704479,
+                                   "volume":  1209.0,
+                                   "max":  704485
+                               },
+    "GLOSSY_GEMSTONE":  {
+                            "min":  1593647,
+                            "median":  1615317,
+                            "mean":  1634224.0,
+                            "mode":  1639564,
+                            "volume":  2723.0,
+                            "max":  1660406
+                        },
+    "GOBLIN_EGG_BLUE":  {
+                            "min":  1200000,
+                            "median":  2215636,
+                            "mean":  2283101.0,
+                            "mode":  2254629,
+                            "volume":  198.0,
+                            "max":  2308052
+                        },
+    "GOLDEN_FRAGMENT":  {
+                            "min":  9065467,
+                            "median":  9432731,
+                            "mean":  9799497.0,
+                            "mode":  9799997,
+                            "volume":  463.0,
+                            "max":  9799997
+                        },
+    "GOLDEN_PLATE":  {
+                         "min":  2302490,
+                         "median":  2440046,
+                         "mean":  2516173.0,
+                         "mode":  2430070,
+                         "volume":  143.0,
+                         "max":  2552955
+                     },
+    "GREAT_WHITE_SHARK_TOOTH":  {
+                                    "min":  10283814,
+                                    "median":  10787804,
+                                    "mean":  11279822.0,
+                                    "mode":  11196032,
+                                    "volume":  520.0,
+                                    "max":  11291794
+                                },
+    "HIGHLITE":  {
+                     "min":  1330996,
+                     "median":  1465498,
+                     "mean":  1599998.0,
+                     "mode":  1599999,
+                     "volume":  314.0,
+                     "max":  1599999
+                 },
+    "HYPERGOLIC_GABAGOOL":  {
+                                "min":  4497351,
+                                "median":  4670938,
+                                "mean":  4827992.0,
+                                "mode":  4827992,
+                                "volume":  1303.0,
+                                "max":  4827994
+                            },
+    "IMPLOSION_SCROLL":  {
+                             "min":  169698368,
+                             "median":  173287285,
+                             "mean":  176582661.0,
+                             "mode":  175999999,
+                             "volume":  48.0,
+                             "max":  176876208
+                         },
+    "JADERALD":  {
+                     "min":  1054416,
+                     "median":  1155170,
+                     "mean":  1293737.0,
+                     "mode":  1427500,
+                     "volume":  579.0,
+                     "max":  1427511
+                 },
+    "KISMET_FEATHER":  {
+                           "min":  1439911,
+                           "median":  1476039,
+                           "mean":  1516688.0,
+                           "mode":  1520176,
+                           "volume":  6135.0,
+                           "max":  1529112
+                       },
+    "KUUDRA_TENTACLE":  {
+                            "min":  3082202,
+                            "median":  3297082,
+                            "mean":  3476827.0,
+                            "mode":  3352000,
+                            "volume":  904.0,
+                            "max":  3799162
+                        },
+    "LESSER_SOULFLOW_ENGINE":  {
+                                   "min":  1700000,
+                                   "median":  1895759,
+                                   "mean":  2055030.0,
+                                   "mode":  2065650,
+                                   "volume":  62.0,
+                                   "max":  2168205
+                               },
+    "MAGMA_BUCKET":  {
+                         "min":  3909868,
+                         "median":  4345739,
+                         "mean":  4752321.0,
+                         "mode":  4740091,
+                         "volume":  301.0,
+                         "max":  4788999
+                     },
+    "MAGMA_LORD_FRAGMENT":  {
+                                "min":  2710000,
+                                "median":  3224492,
+                                "mean":  3457508.0,
+                                "mode":  3307872,
+                                "volume":  1092.0,
+                                "max":  3782828
+                            },
+    "MAGMA_URCHIN":  {
+                         "min":  14837871,
+                         "median":  15446975,
+                         "mean":  16046145.0,
+                         "mode":  15883784,
+                         "volume":  125.0,
+                         "max":  16318381
+                     },
+    "MIRIA_PRIZE":  {
+                        "min":  1519309,
+                        "median":  1657849,
+                        "mean":  1785501.0,
+                        "mode":  1786644,
+                        "volume":  80.0,
+                        "max":  1849369
+                    },
+    "MITHRIL_PLATE":  {
+                          "min":  8236753,
+                          "median":  9139513,
+                          "mean":  9235726.0,
+                          "mode":  9269454,
+                          "volume":  406.0,
+                          "max":  9491619
+                      },
+    "MOONDEW":  {
+                    "min":  729954,
+                    "median":  767681,
+                    "mean":  819341.0,
+                    "mode":  805408,
+                    "volume":  549.0,
+                    "max":  871542
+                },
+    "NULL_BLADE":  {
+                       "min":  15715612,
+                       "median":  16857422,
+                       "mean":  17262020.0,
+                       "mode":  17999232,
+                       "volume":  64.0,
+                       "max":  17999232
+                   },
+    "OVERDRIVE_GARDEN_CHIP":  {
+                                  "min":  1324305,
+                                  "median":  1479652,
+                                  "mean":  1627618.0,
+                                  "mode":  1634998,
+                                  "volume":  141.0,
+                                  "max":  1634998
+                              },
+    "PERFECT_AMBER_GEM":  {
+                              "min":  16209418,
+                              "median":  16880172,
+                              "mean":  17495810.0,
+                              "mode":  17550939,
+                              "volume":  205.0,
+                              "max":  18000000
+                          },
+    "PERFECT_CITRINE_GEM":  {
+                                "min":  13412401,
+                                "median":  14066435,
+                                "mean":  14720468.0,
+                                "mode":  14720467,
+                                "volume":  79.0,
+                                "max":  14720471
+                            },
+    "PERFECT_JADE_GEM":  {
+                             "min":  15280222,
+                             "median":  16162060,
+                             "mean":  16748817.0,
+                             "mode":  16999993,
+                             "volume":  228.0,
+                             "max":  17000000
+                         },
+    "PERFECT_JASPER_GEM":  {
+                               "min":  20953058,
+                               "median":  22049577,
+                               "mean":  22829119.0,
+                               "mode":  22973711,
+                               "volume":  167.0,
+                               "max":  23407258
+                           },
+    "PERFECT_ONYX_GEM":  {
+                             "min":  15861504,
+                             "median":  17643311,
+                             "mean":  19520559.0,
+                             "mode":  19821044,
+                             "volume":  293.0,
+                             "max":  19821048
+                         },
+    "PERFECT_OPAL_GEM":  {
+                             "min":  13000005,
+                             "median":  14741396,
+                             "mean":  16535992.0,
+                             "mode":  16482783,
+                             "volume":  154.0,
+                             "max":  16869760
+                         },
+    "PERFECT_PERIDOT_GEM":  {
+                                "min":  13540360,
+                                "median":  13886909,
+                                "mean":  14263147.0,
+                                "mode":  14399994,
+                                "volume":  107.0,
+                                "max":  14399997
+                            },
+    "PERFECT_PLATE":  {
+                          "min":  37858444,
+                          "median":  39667751,
+                          "mean":  41627830.0,
+                          "mode":  41477053,
+                          "volume":  60.0,
+                          "max":  41879124
+                      },
+    "PERFECT_RUBY_GEM":  {
+                             "min":  15708328,
+                             "median":  16458471,
+                             "mean":  17307536.0,
+                             "mode":  17208613,
+                             "volume":  52.0,
+                             "max":  18007040
+                         },
+    "PERFECT_SAPPHIRE_GEM":  {
+                                 "min":  15139822,
+                                 "median":  15673434,
+                                 "mean":  16161577.0,
+                                 "mode":  16210561,
+                                 "volume":  110.0,
+                                 "max":  16210564
+                             },
+    "PERFECT_TOPAZ_GEM":  {
+                              "min":  16656972,
+                              "median":  17228483,
+                              "mean":  17627987.0,
+                              "mode":  17149000,
+                              "volume":  159.0,
+                              "max":  17809226
+                          },
+    "PLASMA_BUCKET":  {
+                          "min":  11709204,
+                          "median":  12024621,
+                          "mean":  12404796.0,
+                          "mode":  12640124,
+                          "volume":  136.0,
+                          "max":  12740000
+                      },
+    "RAINBOW_FEATHER":  {
+                            "min":  2040006,
+                            "median":  2260003,
+                            "mean":  2538850.0,
+                            "mode":  2488764,
+                            "volume":  220.0,
+                            "max":  2723989
+                        },
+    "RAREFINDER_GARDEN_CHIP":  {
+                                   "min":  987569,
+                                   "median":  999911,
+                                   "mean":  1011943.0,
+                                   "mode":  1012251,
+                                   "volume":  1393.0,
+                                   "max":  1012252
+                               },
+    "RECOMBOBULATOR_3000":  {
+                                "min":  9534245,
+                                "median":  9856852,
+                                "mean":  10025492.0,
+                                "mode":  9972794,
+                                "volume":  1320.0,
+                                "max":  10248625
+                            },
+    "REFINED_DIAMOND":  {
+                            "min":  870944,
+                            "median":  910971,
+                            "mean":  936467.0,
+                            "mode":  943595,
+                            "volume":  2381.0,
+                            "max":  949919
+                        },
+    "REFINED_MITHRIL":  {
+                            "min":  726203,
+                            "median":  770240,
+                            "mean":  778565.0,
+                            "mode":  748312,
+                            "volume":  742.0,
+                            "max":  803428
+                        },
+    "REFINED_TITANIUM":  {
+                             "min":  814098,
+                             "median":  843166,
+                             "mean":  860512.0,
+                             "mode":  866189,
+                             "volume":  980.0,
+                             "max":  891723
+                         },
+    "REHEATED_GUMMY_POLAR_BEAR":  {
+                                      "min":  600780,
+                                      "median":  646994,
+                                      "mean":  688806.0,
+                                      "mode":  688806,
+                                      "volume":  2575.0,
+                                      "max":  688807
+                                  },
+    "RITUAL_RESIDUE":  {
+                           "min":  2025129,
+                           "median":  2184939,
+                           "mean":  2321577.0,
+                           "mode":  2330979,
+                           "volume":  352.0,
+                           "max":  2330982
+                       },
+    "SECOND_MASTER_STAR":  {
+                               "min":  16281777,
+                               "median":  17488764,
+                               "mean":  18282627.0,
+                               "mode":  18394429,
+                               "volume":  57.0,
+                               "max":  18394434
+                           },
+    "SEVERED_HAND":  {
+                         "min":  3990394,
+                         "median":  4441567,
+                         "mean":  4921296.0,
+                         "mode":  4992999,
+                         "volume":  158.0,
+                         "max":  5109407
+                     },
+    "SHADOW_WARP_SCROLL":  {
+                               "min":  157800000,
+                               "median":  162110391,
+                               "mean":  166533898.0,
+                               "mode":  166420782,
+                               "volume":  42.0,
+                               "max":  167325728
+                           },
+    "SHARD_CHAMELEON":  {
+                            "min":  500009,
+                            "median":  624978,
+                            "mean":  708622.0,
+                            "mode":  707991,
+                            "volume":  4122.0,
+                            "max":  749947
+                        },
+    "SHARD_ETHERDRAKE":  {
+                             "min":  1400002,
+                             "median":  1528842,
+                             "mean":  1654460.0,
+                             "mode":  1657682,
+                             "volume":  135.0,
+                             "max":  1657682
+                         },
+    "SHARD_GALAXY_FISH":  {
+                              "min":  1400007,
+                              "median":  1558977,
+                              "mean":  1678588.0,
+                              "mode":  1717947,
+                              "volume":  287.0,
+                              "max":  1717947
+                          },
+    "SHARD_GECKO":  {
+                        "min":  802636,
+                        "median":  827686,
+                        "mean":  856145.0,
+                        "mode":  844538,
+                        "volume":  197.0,
+                        "max":  900000
+                    },
+    "SHARD_JORMUNG":  {
+                          "min":  1654239,
+                          "median":  1777114,
+                          "mean":  1899989.0,
+                          "mode":  1899990,
+                          "volume":  117.0,
+                          "max":  1899990
+                      },
+    "SHARD_MOLTHORN":  {
+                           "min":  8000007,
+                           "median":  8999996,
+                           "mean":  9949986.0,
+                           "mode":  9999987,
+                           "volume":  73.0,
+                           "max":  9999987
+                       },
+    "SHARD_PARAGON":  {
+                          "min":  1500009,
+                          "median":  1603605,
+                          "mean":  1705375.0,
+                          "mode":  1718266,
+                          "volume":  177.0,
+                          "max":  1718271
+                      },
+    "SHARD_RABBIT_GODMOTHER":  {
+                                   "min":  630782,
+                                   "median":  743998,
+                                   "mean":  862382.0,
+                                   "mode":  851825,
+                                   "volume":  76.0,
+                                   "max":  876394
+                               },
+    "SHARD_RABBIT_NEIGHBOR":  {
+                                  "min":  676622,
+                                  "median":  781204,
+                                  "mean":  908479.0,
+                                  "mode":  824235,
+                                  "volume":  303.0,
+                                  "max":  1099998
+                              },
+    "SHARD_WOLVERINE":  {
+                            "min":  906127,
+                            "median":  1009261,
+                            "mean":  1122499.0,
+                            "mode":  1100494,
+                            "volume":  138.0,
+                            "max":  1227060
+                        },
+    "SIL_EX":  {
+                   "min":  2481352,
+                   "median":  3016237,
+                   "mean":  3169990.0,
+                   "mode":  3169988,
+                   "volume":  212.0,
+                   "max":  3169992
+               },
+    "SINGED_POWDER":  {
+                          "min":  1825252,
+                          "median":  1873740,
+                          "mean":  1922929.0,
+                          "mode":  1917608,
+                          "volume":  471.0,
+                          "max":  1951946
+                      },
+    "SKELETON_KEY":  {
+                         "min":  40118492,
+                         "median":  40867166,
+                         "mean":  41581815.0,
+                         "mode":  41466103,
+                         "volume":  173.0,
+                         "max":  41886764
+                     },
+    "SOUL_FRAGMENT":  {
+                          "min":  699713,
+                          "median":  767768,
+                          "mean":  835817.0,
+                          "mode":  835818,
+                          "volume":  715.0,
+                          "max":  835818
+                      },
+    "SPIRIT_BONE":  {
+                        "min":  1938113,
+                        "median":  2082040,
+                        "mean":  2195166.0,
+                        "mode":  2204432,
+                        "volume":  101.0,
+                        "max":  2204436
+                    },
+    "SPIRIT_WING":  {
+                        "min":  2044772,
+                        "median":  2179018,
+                        "mean":  2309907.0,
+                        "mode":  2313261,
+                        "volume":  131.0,
+                        "max":  2313265
+                    },
+    "STOPLIGHT_PETAL":  {
+                            "min":  737074,
+                            "median":  830004,
+                            "mean":  970777.0,
+                            "mode":  859014,
+                            "volume":  794.0,
+                            "max":  1086806
+                        },
+    "SUBZERO_INVERTER":  {
+                             "min":  1513965,
+                             "median":  1547857,
+                             "mean":  1581749.0,
+                             "mode":  1581748,
+                             "volume":  76.0,
+                             "max":  1581749
+                         },
+    "SUMMONING_EYE":  {
+                          "min":  1303000,
+                          "median":  1318384,
+                          "mean":  1343774.0,
+                          "mode":  1318499,
+                          "volume":  3678.0,
+                          "max":  1378871
+                      },
+    "TESSELLATED_ENDER_PEARL":  {
+                                    "min":  4063381,
+                                    "median":  4356688,
+                                    "mean":  4616244.0,
+                                    "mode":  4649993,
+                                    "volume":  68.0,
+                                    "max":  4649995
+                                },
+    "THE_ART_OF_WAR":  {
+                           "min":  16115019,
+                           "median":  17725127,
+                           "mean":  19171997.0,
+                           "mode":  19524997,
+                           "volume":  423.0,
+                           "max":  19524998
+                       },
+    "THIRD_MASTER_STAR":  {
+                              "min":  26201710,
+                              "median":  27243437,
+                              "mean":  28126369.0,
+                              "mode":  27949999,
+                              "volume":  70.0,
+                              "max":  28270168
+                          },
+    "TUNGSTEN_KEY":  {
+                         "min":  3001377,
+                         "median":  3130945,
+                         "mean":  3260318.0,
+                         "mode":  3260503,
+                         "volume":  255.0,
+                         "max":  3260510
+                     },
+    "TUNGSTEN_PLATE":  {
+                           "min":  12645332,
+                           "median":  12831684,
+                           "mean":  12996792.0,
+                           "mode":  13018035,
+                           "volume":  160.0,
+                           "max":  13059452
+                       },
+    "ULTIMATE_CARROT_CANDY":  {
+                                  "min":  1814256,
+                                  "median":  1946367,
+                                  "mean":  2078478.0,
+                                  "mode":  2078471,
+                                  "volume":  656.0,
+                                  "max":  2078481
+                              },
+    "UMBER_KEY":  {
+                      "min":  3331853,
+                      "median":  3545789,
+                      "mean":  3715416.0,
+                      "mode":  3727023,
+                      "volume":  374.0,
+                      "max":  3766666
+                  },
+    "UMBER_PLATE":  {
+                        "min":  15577582,
+                        "median":  15920744,
+                        "mean":  16742675.0,
+                        "mode":  15969998,
+                        "volume":  243.0,
+                        "max":  23550002
+                    },
+    "WITHER_BLOOD":  {
+                         "min":  1613215,
+                         "median":  1837154,
+                         "mean":  2013740.0,
+                         "mode":  2110855,
+                         "volume":  445.0,
+                         "max":  2110857
+                     },
+    "WITHER_CATALYST":  {
+                            "min":  2531002,
+                            "median":  2772535,
+                            "mean":  2908151.0,
+                            "mode":  2845065,
+                            "volume":  488.0,
+                            "max":  3399997
+                        },
+    "WITHER_SHIELD_SCROLL":  {
+                                 "min":  158500016,
+                                 "median":  161457569,
+                                 "mean":  165257752.0,
+                                 "mode":  164415111,
+                                 "volume":  25.0,
+                                 "max":  174577952
+                             },
+    "WOOD_SINGULARITY":  {
+                             "min":  5138414,
+                             "median":  6284998,
+                             "mean":  6837499.0,
+                             "mode":  6300000,
+                             "volume":  93.0,
+                             "max":  7399999
+                         },
+    "XXLARGE_ENCHANTED_CHEST":  {
+                                    "min":  4104676,
+                                    "median":  4525395,
+                                    "mean":  4969487.0,
+                                    "mode":  4946113,
+                                    "volume":  198.0,
+                                    "max":  5039608
+                                }
+}

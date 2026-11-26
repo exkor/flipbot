@@ -1,0 +1,78 @@
+plugins {
+	id 'net.fabricmc.fabric-loom' version "${loom_version}"
+	id 'org.jetbrains.kotlin.jvm' version "${kotlin_version}"
+}
+
+// Build setup copied from kittyaddon (Kotlin for the GUI), without bundled libraries. ./gradlew build -Pmc=26.2
+def mc = project.property("mc")
+def mcProps = new Properties()
+file("versions/${mc}.properties").withInputStream { mcProps.load(it) }
+mcProps.each { key, value -> project.ext.set(key, value) }
+version = "${project.mod_version}+${mc}"
+
+repositories {
+	mavenCentral()
+}
+
+loom {
+	runConfigs.configureEach {
+		runDir = "run"
+	}
+	// gradlew runClient -Pselftest: drop into run/saves/FlipBotTest, run SelfTest, quit.
+	if (project.hasProperty("selftest")) {
+		runConfigs.client {
+			vmArg "-Dflipbot.selftest=true"
+			if (project.hasProperty("menuOnly")) vmArg "-Dflipbot.selftest.menuOnly=true"
+			programArgs "--quickPlaySingleplayer", "FlipBotTest", "--width", "1600", "--height", "900"
+		}
+	}
+	mods {
+		"flipbot" {
+			sourceSet sourceSets.main
+		}
+	}
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+	// The GUI is Kotlin (same versions as kittyaddon)
+	implementation "net.fabricmc:fabric-language-kotlin:${project.fabric_kotlin_version}"
+
+	testImplementation platform("org.junit:junit-bom:${project.junit_version}")
+	testImplementation "org.junit.jupiter:junit-jupiter"
+	testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+processResources {
+	def version = project.version
+	def minecraftRange = project.minecraft_range
+	inputs.property "version", version
+	inputs.property "minecraftRange", minecraftRange
+
+	filesMatching("fabric.mod.json") {
+		expand "version": version, "minecraft_range": minecraftRange
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 25
+	it.options.encoding = "UTF-8"
+}
+
+java {
+	withSourcesJar()
+	sourceCompatibility = JavaVersion.VERSION_25
+	targetCompatibility = JavaVersion.VERSION_25
+}
+
+test {
+	useJUnitPlatform()
+	testLogging { events "failed"; exceptionFormat "full" }
+}
+
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+	compilerOptions.jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_25
+}

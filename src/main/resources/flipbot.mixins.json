@@ -1,0 +1,9 @@
+{
+  "required": true,
+  "package": "com.exkor.flipbot.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": ["FlipperSignFillMixin", "GameRendererUiMixin"],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

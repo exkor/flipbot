@@ -1,0 +1,13 @@
+# FlipAnalyzer.candidates top 10 on bazaar-snapshot.json + coflnet-history.json
+# (default config, 500M bankroll, 20 free slots). Matches: flipcompare.ps1 -BazaarFile ... -HistoryFile ...
+# Re-record both snapshots with tools/record-snapshot.ps1, then update this list from the script's output.
+PERFECT_ONYX_GEM
+FLYCATCHER_UPGRADE
+DEEP_SEA_ORB
+WITHER_BLOOD
+FLAWLESS_RUBY_GEM
+SEVERED_HAND
+PERFECT_OPAL_GEM
+SIL_EX
+ENCHANTMENT_GROWTH_6
+GOLDEN_FRAGMENT
