@@ -175,6 +175,12 @@ final class SelfTest {
                             client.gameRenderer.mainRenderTarget(), 1, msg -> log("screenshot early flips, page=" + screen.getCurrentPage())));
                     Thread.sleep(Boolean.getBoolean("flipbot.selftest.menuOnly") ? 6_000 : 22_000);
                 }
+                if (page == com.exkor.flipbot.ui.FlipBotScreen.Page.CRAFTS) {
+                    long end = System.currentTimeMillis() + 60_000;
+                    while (System.currentTimeMillis() < end && com.exkor.flipbot.craft.CraftFlipper.busy()) Thread.sleep(500);
+                    log("crafts: " + com.exkor.flipbot.craft.CraftFlipper.status());
+                    Thread.sleep(1000);
+                }
                 if (client.gui.screen() != screen) {
                     // Something replaced the menu (keyboard input reaching the test window): put it back.
                     log("menu was replaced by " + client.gui.screen() + " - reopening it");

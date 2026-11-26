@@ -1,6 +1,10 @@
 package com.exkor.flipbot.ui
 
+import com.exkor.flipbot.craft.CollectionScanner
+import com.exkor.flipbot.craft.Collections
+import com.exkor.flipbot.craft.CraftFlipper
 import com.exkor.flipbot.flipper.Bankroll
+import com.exkor.flipbot.flipper.data.ItemNames
 import com.exkor.flipbot.flipper.FlipperConfig
 import com.exkor.flipbot.flipper.FlipperMod
 import com.exkor.flipbot.flipper.analysis.BazaarFlipTracker
@@ -34,7 +38,7 @@ class FlipBotScreen : UiScreen("FlipBot") {
         private const val BAR_H = 34
     }
 
-    enum class Page(val title: String) { OVERVIEW("Overview"), ORDERS("Orders"), FLIPS("Flips"), SETTINGS("Settings") }
+    enum class Page(val title: String) { OVERVIEW("Overview"), ORDERS("Orders"), FLIPS("Flips"), CRAFTS("Crafts"), SETTINGS("Settings") }
 
     private val cfg: FlipperConfig get() = FlipperMod.CONFIG
     private var page = lastPage
@@ -56,6 +60,7 @@ class FlipBotScreen : UiScreen("FlipBot") {
         Easing.animations = cfg.uiAnimations
         super.init()
         if (page == Page.FLIPS) startTracker()
+        if (page == Page.CRAFTS && CraftFlipper.plans().isEmpty()) CraftFlipper.refresh()
     }
 
     override fun removed() {
@@ -84,6 +89,7 @@ class FlipBotScreen : UiScreen("FlipBot") {
         scroll = 0f; scrollTarget = 0f
         setFocus(null)
         if (p == Page.FLIPS) startTracker()
+        if (p == Page.CRAFTS && CraftFlipper.plans().isEmpty()) CraftFlipper.refresh()
     }
 
     private fun say(msg: String, bad: Boolean = false) {
@@ -107,6 +113,7 @@ class FlipBotScreen : UiScreen("FlipBot") {
             Page.OVERVIEW -> drawOverview(x, y0, w)
             Page.ORDERS -> drawOrders(x, y0, w)
             Page.FLIPS -> drawFlips(x, y0, w)
+            Page.CRAFTS -> drawCrafts(x, y0, w)
             Page.SETTINGS -> drawSettings(x, y0, w)
         }
         popClip()
@@ -427,6 +434,74 @@ class FlipBotScreen : UiScreen("FlipBot") {
         text(label, x + 8, y + 4.2f, 6.8f, if (on) Theme.ON_PRIMARY else if (hov) Theme.TEXT else Theme.SUB)
         hit(x, y, w, 15, action)
         return w
+    }
+
+    // ------------------------------------------------------------------ crafts
+
+    private fun drawCrafts(x: Int, y0: Int, w: Int): Int {
+        var y = y0
+        val scanned = Collections.scannedAt()
+        val scanning = CollectionScanner.running()
+        val busy = CraftFlipper.busy()
+
+        // Status line + actions
+        val info = when {
+            scanning -> "Reading your collections…"
+            scanned <= 0 -> "Collections not read yet: unlocks unknown"
+            else -> "Collections read ${ago(scanned)} ago · level-ups update automatically"
+        }
+        text(fit(info, 6.5f, w - 150f), x, y + 3.5f, 6.5f, if (scanned <= 0 && !scanning) Theme.TEXT_SOFT else Theme.DIM)
+        val rw = 56
+        button("Refresh", x + w - rw, y - 1, rw, 16, Style.GHOST, enabled = !busy) { CraftFlipper.refresh() }
+        val sl = if (scanned <= 0) "Read collections" else "Re-read"
+        val sw = (tw(sl, 7f) + 16).toInt()
+        val onSb = runCatching { ScreenUtil.onSkyBlock() }.getOrDefault(false)
+        button(sl, x + w - rw - 6 - sw, y - 1, sw, 16, if (scanned <= 0) Style.PRIMARY else Style.GHOST, enabled = onSb && !busy) {
+            val mc = Minecraft.getInstance()
+            mc.gui.setScreen(null)
+            CollectionScanner.scanAsync { mc.gui.setScreen(FlipBotScreen()) }
+        }
+        if (!onSb && inside(x + w - rw - 6 - sw, y - 1, sw, 16)) tip("Join SkyBlock to read your collections")
+        y += 24
+
+        val plans = CraftFlipper.plans()
+        if (plans.isEmpty()) {
+            text(CraftFlipper.status().ifEmpty { "Loading…" }, x, y + 4, 7f, Theme.SUB)
+            return y + 24 - y0
+        }
+        label("Craft", x, y); label("Batch", x + (w * 0.56).toInt(), y); label("Profit", x + (w * 0.70).toInt(), y)
+        y += 12
+        for (p in plans.take(30)) {
+            val r = p.recipe()
+            val status = CraftFlipper.unlock(r)
+            val hov = inside(x - 4, y, w + 8, 26)
+            if (hov) Theme.round(x - 4, y, w + 8, 26, 5f, Theme.MUTED)
+            val name = ItemNames.displayName(r.output()) ?: r.output()
+            text(fit(name.trim() + if (r.outputCount() > 1) " ×${r.outputCount()}" else "", 7.3f, w * 0.52f), x, y + 4, 7.3f,
+                if (status == Collections.Status.LOCKED) Theme.SUB else Theme.TEXT)
+            val ingredients = r.ingredients().entries.joinToString(", ") { (id, n) -> "$n× ${(ItemNames.displayName(id) ?: id).trim()}" }
+            text(fit(ingredients, 6.2f, w * 0.52f), x, y + 15, 6.2f, Theme.DIM)
+            text("×${p.batchCrafts()}", x + (w * 0.56).toInt(), y + 9f, 6.8f, Theme.SUB)
+            bold(if (p.batchCrafts() > 0) "+" + coins(p.batchProfit()) else "+" + coins(p.profitPerCraft()) + " ea", x + (w * 0.70).toInt(), y + 4, 7.3f, Theme.GOOD)
+            text(String.format(Locale.ROOT, "%.1f%%", p.marginPercent()), x + (w * 0.70).toInt(), y + 15, 6.2f, Theme.DIM)
+            val (chip, color) = when (status) {
+                Collections.Status.UNLOCKED -> "unlocked" to Theme.GOOD
+                Collections.Status.LOCKED -> "locked" to Theme.DANGER
+                else -> "unclear" to Theme.DIM
+            }
+            val cw = (tw(chip, 6.3f) + 12).toInt()
+            Theme.round(x + w - cw, y + 6, cw, 13, 6.5f, Theme.withAlpha(color, 0x26))
+            text(chip, x + w - cw + 6, y + 9.3f, 6.3f, color)
+            if (hov) tip(buildString {
+                append(if (r.requirement().isBlank()) "No requirement listed (may be slayer-gated)" else r.requirement())
+                append(" · per craft ${coins(p.costPerCraft())} → ${coins(p.revenuePerCraft())}")
+                if (status == Collections.Status.UNKNOWN && r.requirement().isNotBlank()) append(" · not a collection, or not read yet")
+                if (status == Collections.Status.UNKNOWN) append(" · never bought")
+            })
+            y += 27
+        }
+        text("Budget ${coins(CraftFlipper.budget())}" + (if (CraftFlipper.budget() <= 0) " (no profit made yet)" else "") + " · nothing is bought yet", x, y + 6, 6.2f, Theme.DIM)
+        return y + 20 - y0
     }
 
     // ------------------------------------------------------------------ settings

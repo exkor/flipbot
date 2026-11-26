@@ -36,6 +36,7 @@ public final class FlipBotClient implements ClientModInitializer {
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> Commands.register(dispatcher));
         ClientTickEvents.END_CLIENT_TICK.register(FlipBotClient::onTick);
         BazaarChatListener.init();
+        com.exkor.flipbot.craft.CraftFlipper.init();
         HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "status"), (graphics, delta) -> {
             Minecraft mc = Minecraft.getInstance();
             String line = FlipperMod.hudLine();
@@ -51,6 +52,7 @@ public final class FlipBotClient implements ClientModInitializer {
 
     private static void onTick(Minecraft client) {
         SelfTest.onTick(client);
+        com.exkor.flipbot.craft.CraftFlipper.tick(client);
         // Keep the last known purse fresh (every 2 s) for the menu, /flipbot flips and the bankroll.
         if (client.player != null && ++purseTicks >= 40) {
             purseTicks = 0;
