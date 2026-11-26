@@ -62,6 +62,7 @@ public final class RecipeRepo {
                 Cache c = GSON.fromJson(Files.readString(path, StandardCharsets.UTF_8), new TypeToken<Cache>() {}.getType());
                 if (c != null && c.recipes() != null && c.names() != null && System.currentTimeMillis() - c.savedAt() < MAX_AGE_MS) {
                     com.exkor.flipbot.flipper.data.ItemNames.setRepoNames(c.names());
+                    com.exkor.flipbot.flipper.data.ItemNames.registerGuesses(bazaarIds);
                     recipes = List.copyOf(c.recipes());
                     loadedAt = c.savedAt();
                     status = recipes.size() + " recipes";
@@ -76,6 +77,7 @@ public final class RecipeRepo {
             Map<String, String> names = new HashMap<>();
             List<Recipe> fresh = download(bazaarIds, names);
             com.exkor.flipbot.flipper.data.ItemNames.setRepoNames(names);
+            com.exkor.flipbot.flipper.data.ItemNames.registerGuesses(bazaarIds);
             recipes = List.copyOf(fresh);
             loadedAt = System.currentTimeMillis();
             Files.createDirectories(file().getParent());

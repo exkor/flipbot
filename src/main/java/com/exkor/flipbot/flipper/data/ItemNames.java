@@ -44,6 +44,13 @@ public class ItemNames {
                 PRODUCT_TO_NAME.put(entry.getKey(), name);
                 NAME_TO_PRODUCT.putIfAbsent(name.toLowerCase(), entry.getKey());
                 NAME_TO_PRODUCT.putIfAbsent(nameKey(name), entry.getKey());
+                if (entry.getKey().startsWith("SHARD_") && !name.toLowerCase().endsWith(" shard")) {
+                    // The bundled list has shards as "Salmon"; in game they are "Salmon Shard".
+                    String current = name + " Shard";
+                    REPO_NAMES.put(entry.getKey(), current);
+                    NAME_TO_PRODUCT.put(current.toLowerCase(), entry.getKey());
+                    NAME_TO_PRODUCT.put(nameKey(current), entry.getKey());
+                }
             }
         } catch (Exception ignored) {
         }
@@ -105,15 +112,60 @@ public class ItemNames {
         if (mapped != null) {
             return mapped;
         }
-        String[] words = productId.toLowerCase().split("_");
+        return guessName(productId);
+    }
+
+    private static final java.util.regex.Pattern ENCHANT_ID =
+            java.util.regex.Pattern.compile("^ENCHANTMENT_(?:ULTIMATE_)?(.+)_(\\d+)$");
+
+    /**
+     * A name for an id no list knows, in Hypixel's patterns: SHARD_BLACK_WIDOW -> "Black Widow Shard",
+     * ENCHANTMENT_ULTIMATE_WISE_5 -> "Wise V", anything else title-cased.
+     */
+    static String guessName(String productId) {
+        if (productId.startsWith("SHARD_")) {
+            return titleCase(productId.substring(6)) + " Shard";
+        }
+        java.util.regex.Matcher m = ENCHANT_ID.matcher(productId);
+        if (m.matches()) {
+            return titleCase(m.group(1)) + " " + roman(Integer.parseInt(m.group(2)));
+        }
+        return titleCase(productId);
+    }
+
+    private static String titleCase(String id) {
         StringBuilder sb = new StringBuilder();
-        for (String word : words) {
+        for (String word : id.toLowerCase().split("_")) {
             if (word.isEmpty()) {
                 continue;
             }
             sb.append(Character.toUpperCase(word.charAt(0))).append(word.substring(1)).append(' ');
         }
         return sb.toString().trim();
+    }
+
+    static String roman(int n) {
+        if (n <= 0 || n > 39) {
+            return String.valueOf(n);
+        }
+        String[] tens = {"", "X", "XX", "XXX"};
+        String[] ones = {"", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"};
+        return tens[n / 10] + ones[n % 10];
+    }
+
+    /** Lets the guessed names of these Bazaar ids resolve back to their id (order names, inventory items). */
+    public static void registerGuesses(java.util.Collection<String> bazaarIds) {
+        if (PRODUCT_TO_NAME.isEmpty()) {
+            load();
+        }
+        for (String id : bazaarIds) {
+            if (PRODUCT_TO_NAME.containsKey(id) || REPO_NAMES.containsKey(id)) {
+                continue;
+            }
+            String name = guessName(id);
+            NAME_TO_PRODUCT.putIfAbsent(name.toLowerCase(), id);
+            NAME_TO_PRODUCT.putIfAbsent(nameKey(name), id);
+        }
     }
 
     public static String productId(String displayName) {
