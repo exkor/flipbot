@@ -1636,6 +1636,7 @@ public class Trader {
 
     private long lastCraftChatAt;
     private long craftBlockedUntil;
+    private boolean craftMenuLogged;
 
     /** Whether a GUI buy order belongs to the craft batch in progress (never flipped, cancelled or sold). */
     private boolean craftHeld(String itemName) {
@@ -1957,16 +1958,28 @@ public class Trader {
                         || !(c.getMenu() instanceof net.minecraft.world.inventory.ChestMenu chest)) {
                     return null;
                 }
+                int pickaxe = -1;
                 for (int i = 0; i < chest.getContainer().getContainerSize(); i++) {
                     net.minecraft.world.item.ItemStack st = chest.getContainer().getItem(i);
-                    if (!st.isEmpty() && ScreenUtil.cleanName(st.getHoverName().getString()).toLowerCase(java.util.Locale.ROOT)
+                    if (st.isEmpty()) {
+                        continue;
+                    }
+                    if (ScreenUtil.cleanName(st.getHoverName().getString()).toLowerCase(java.util.Locale.ROOT)
                             .contains("supercraft")) {
                         return i;
                     }
+                    // The recipe menu's Supercraft button is a golden pickaxe below the crafting table.
+                    if (pickaxe < 0 && st.is(net.minecraft.world.item.Items.GOLDEN_PICKAXE)) {
+                        pickaxe = i;
+                    }
                 }
-                return -1;
+                return pickaxe;
             });
             if (slot != null && slot >= 0) {
+                if (!craftMenuLogged) {
+                    craftMenuLogged = true;
+                    logCraftMenu("recipe menu for " + output + " (Supercraft = slot " + slot + ")");
+                }
                 sleepOrStop(ScreenUtil.jitter(300));
                 return slot;
             }
