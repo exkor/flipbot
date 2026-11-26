@@ -81,6 +81,8 @@ public class FlipperConfig {
     public boolean finishBatchFirst = true;
     /** Practice mode (default): walk the menus up to the confirm screen, back out, simulate the order. */
     public boolean practiceMode = true;
+    /** Craft flipper: buy ingredients with buy orders, craft them (unlocked recipes only), sell the result. */
+    public boolean craftFlipping = false;
     /** Menu size, animations, and the status HUD while the bot runs. */
     public double uiScale = 1.0;
     public boolean uiAnimations = true;

@@ -22,6 +22,12 @@ public class Trade {
     public double lastBestBid;
     public int notFoundChecks;
     public long lastRelistedAt;
+    /** Craft flipper: the batch this trade belongs to (null for flips). */
+    public String craftId;
+    /** Craft flipper: an ingredient buy order. Its items are crafted, never sold, and it is not profit by itself. */
+    public boolean craftIngredient;
+    /** Craft flipper: ingredient units claimed into the inventory so far. */
+    public long claimedQty;
 
     public boolean isOpen() {
         return state == State.PLANNED || state == State.BUY_OPEN || state == State.FILLED

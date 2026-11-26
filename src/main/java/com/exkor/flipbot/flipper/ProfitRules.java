@@ -28,6 +28,7 @@ public final class ProfitRules {
     public static int unsoldTrades(Collection<Trade> trades) {
         int n = 0;
         for (Trade t : trades) {
+            if (t.craftIngredient) continue; // held for a craft, not for sale
             if (t.state == Trade.State.FILLED || t.state == Trade.State.CLAIMED || t.state == Trade.State.SELL_OPEN) n++;
         }
         return n;
@@ -38,6 +39,10 @@ public final class ProfitRules {
         int n = 0;
         for (PracticeBook.Order o : book.orders) {
             if (o.state == PracticeBook.State.OPEN && o.side == PracticeBook.Side.SELL) n++;
+        }
+        PracticeBook.Craft craft = book.openCraft();
+        if (craft != null && craft.selling) {
+            n++;
         }
         return n;
     }

@@ -119,7 +119,7 @@ public class OrderLedger {
     }
 
     static boolean countsAsProfit(Trade trade) {
-        return trade.state == Trade.State.DONE && trade.qty > 0 && trade.cost > 0;
+        return trade.state == Trade.State.DONE && trade.qty > 0 && trade.cost > 0 && !trade.craftIngredient;
     }
 
     public synchronized double totalInvested() {

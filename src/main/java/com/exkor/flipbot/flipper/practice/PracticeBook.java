@@ -55,7 +55,33 @@ public final class PracticeBook {
     /** A restart or a stopped bot must not count as hours of fills. */
     static final double MAX_TICK_MINUTES = 5;
 
+    /**
+     * A simulated craft batch: ingredient buy orders fill at each ingredient's insta-sell rate while they are the top
+     * buy order (outbid: they wait); once all are in, the result is listed at best ask - 0.1 (never below break-even)
+     * and fills at its insta-buy rate.
+     */
+    public static final class Craft {
+        public String id;
+        public String output;
+        public String name;
+        public int outputCount;
+        public long crafts;
+        public State state = State.OPEN;
+        public Map<String, Long> need = new LinkedHashMap<>();
+        public Map<String, Double> price = new LinkedHashMap<>();
+        public Map<String, Double> filled = new LinkedHashMap<>();
+        public boolean selling;
+        public double cost;
+        public long units;
+        public double sellPrice;
+        public double sold;
+        public double proceeds;
+        public long placedAt;
+    }
+
     public final List<Order> orders = new ArrayList<>();
+    public final List<Craft> crafts = new ArrayList<>();
+    public int completedCrafts;
     public double realizedProfit;
     public double predictedCoins;
     public double activeMinutes;
@@ -85,19 +111,63 @@ public final class PracticeBook {
         return o;
     }
 
+    /** Starts a simulated craft batch. {@code perCraft} and {@code price} are per ingredient. */
+    public Craft recordCraft(String output, String name, int outputCount, long crafts, Map<String, Integer> perCraft,
+                             Map<String, Double> price, long now) {
+        Craft c = new Craft();
+        c.id = "PC" + nextId++;
+        c.output = output;
+        c.name = name;
+        c.outputCount = outputCount;
+        c.crafts = crafts;
+        for (Map.Entry<String, Integer> e : perCraft.entrySet()) {
+            long need = (long) e.getValue() * crafts;
+            double p = price.getOrDefault(e.getKey(), 0.0);
+            c.need.put(e.getKey(), need);
+            c.price.put(e.getKey(), p);
+            c.filled.put(e.getKey(), 0.0);
+            c.cost += need * p;
+        }
+        c.units = (long) outputCount * crafts;
+        c.placedAt = now;
+        this.crafts.add(c);
+        Map<String, Object> e = new LinkedHashMap<>();
+        e.put("time", now);
+        e.put("event", "CRAFT_START");
+        e.put("id", c.id);
+        e.put("item", output);
+        e.put("crafts", crafts);
+        e.put("cost", c.cost);
+        events.accept(e);
+        return c;
+    }
+
+    /** The craft batch in progress, or null. */
+    public Craft openCraft() {
+        for (Craft c : crafts) if (c.state == State.OPEN) return c;
+        return null;
+    }
+
     public int openCount() {
         int n = 0;
         for (Order o : orders) if (o.state == State.OPEN) n++;
+        Craft c = openCraft();
+        if (c != null) n += c.selling ? 1 : c.need.size();
         return n;
     }
 
     public Set<String> openProductIds() {
         Set<String> ids = new HashSet<>();
         for (Order o : orders) if (o.state == State.OPEN) ids.add(o.productId);
+        Craft c = openCraft();
+        if (c != null) {
+            ids.addAll(c.need.keySet());
+            ids.add(c.output);
+        }
         return ids;
     }
 
-    /** Coins tied up: unfilled buy orders plus the cost of unsold units in sell offers. */
+    /** Coins tied up: unfilled buy orders plus the cost of unsold units in sell offers (and the open craft). */
     public double investedCoins() {
         double sum = 0;
         for (Order o : orders) {
@@ -105,6 +175,8 @@ public final class PracticeBook {
             if (o.side == Side.BUY) sum += o.price * o.qty;
             else sum += o.cost * (1.0 - units(o) / (double) o.qty);
         }
+        Craft c = openCraft();
+        if (c != null) sum += c.selling ? c.cost * (1.0 - Math.floor(c.sold + 1e-9) / c.units) : c.cost;
         return sum;
     }
 
@@ -127,6 +199,64 @@ public final class PracticeBook {
             if (o.side == Side.BUY) tickBuy(o, p, minutes, outbidTicksBeforeCancel, now);
             else tickSell(o, p, minutes, taxFactor, now);
         }
+        Craft c = openCraft();
+        if (c != null) tickCraft(c, data, minutes, taxFactor, now);
+    }
+
+    private void tickCraft(Craft c, MarketData data, double minutes, double taxFactor, long now) {
+        if (!c.selling) {
+            boolean all = true;
+            for (Map.Entry<String, Long> e : c.need.entrySet()) {
+                double have = c.filled.getOrDefault(e.getKey(), 0.0);
+                MarketData.Product p = data.products.get(e.getKey());
+                if (have < e.getValue() && p != null && p.bestBid <= c.price.get(e.getKey()) + 1e-6) {
+                    have = Math.min(e.getValue(), have + p.sellMovingWeek / WEEK_MINUTES * minutes);
+                    c.filled.put(e.getKey(), have);
+                }
+                if (Math.floor(have + 1e-9) < e.getValue()) all = false;
+            }
+            if (!all) return;
+            MarketData.Product out = data.products.get(c.output);
+            if (out == null || out.bestAsk <= 0) return;
+            c.selling = true;
+            c.sellPrice = Math.max(round1(out.bestAsk - 0.1), breakEven(c, taxFactor));
+            Map<String, Object> e = new LinkedHashMap<>();
+            e.put("time", now);
+            e.put("event", "CRAFTED");
+            e.put("id", c.id);
+            e.put("item", c.output);
+            e.put("qty", c.units);
+            e.put("price", c.sellPrice);
+            events.accept(e);
+            return;
+        }
+        MarketData.Product p = data.products.get(c.output);
+        if (p == null) return;
+        if (p.bestAsk > 0 && p.bestAsk < c.sellPrice - 1e-6) {
+            c.sellPrice = Math.max(round1(p.bestAsk - 0.1), breakEven(c, taxFactor));
+            if (p.bestAsk < c.sellPrice - 1e-6) return; // holding at break-even
+        }
+        long before = (long) Math.floor(c.sold + 1e-9);
+        c.sold = Math.min(c.units, c.sold + p.buyMovingWeek / WEEK_MINUTES * minutes);
+        long after = (long) Math.floor(c.sold + 1e-9);
+        if (after > before) c.proceeds += (after - before) * c.sellPrice * taxFactor;
+        if (after >= c.units) {
+            c.state = State.DONE;
+            completedSells++;
+            completedCrafts++;
+            realizedProfit += c.proceeds - c.cost;
+            Map<String, Object> e = new LinkedHashMap<>();
+            e.put("time", now);
+            e.put("event", "CRAFT_SOLD");
+            e.put("id", c.id);
+            e.put("item", c.output);
+            e.put("profit", c.proceeds - c.cost);
+            events.accept(e);
+        }
+    }
+
+    private static double breakEven(Craft c, double taxFactor) {
+        return c.units > 0 ? round1(c.cost / c.units / taxFactor + 0.1) : 0;
     }
 
     private void tickBuy(Order o, MarketData.Product p, double minutes, int outbidTicksBeforeCancel, long now) {

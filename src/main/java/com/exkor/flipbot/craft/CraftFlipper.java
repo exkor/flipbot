@@ -33,6 +33,29 @@ public final class CraftFlipper {
     public static double budget() { return budget; }
     public static boolean busy() { return BUSY.get() || CollectionScanner.running(); }
 
+    /** One line about the batch in progress (practice or live), or null when none is running. */
+    public static String activeSummary() {
+        if (FlipperMod.CONFIG.practiceMode) {
+            var c = FlipperMod.practice().openCraft();
+            if (c == null) return null;
+            if (c.selling) {
+                return String.format(java.util.Locale.ROOT, "Practice: selling %d/%d %s", (long) Math.floor(c.sold), c.units, c.name);
+            }
+            double have = 0, need = 0;
+            for (var e : c.need.entrySet()) {
+                need += e.getValue();
+                have += Math.min(e.getValue(), c.filled.getOrDefault(e.getKey(), 0.0));
+            }
+            return String.format(java.util.Locale.ROOT, "Practice: buying ingredients for %d× %s (%.0f%%)",
+                    c.crafts, c.name, need > 0 ? have / need * 100 : 0);
+        }
+        CraftBatch b = CraftBatch.current();
+        if (b == null) return null;
+        String name = com.exkor.flipbot.flipper.data.ItemNames.displayName(b.output);
+        return b.state == CraftBatch.State.CRAFTING ? "Crafting " + b.crafts + "× " + name
+                : "Buying ingredients for " + b.crafts + "× " + name;
+    }
+
     public static Collections.Status unlock(Recipe r) {
         return Collections.status(r, Collections.tiers());
     }

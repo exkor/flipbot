@@ -739,7 +739,7 @@ public class Trader {
             return;
         }
         if (!ordersBusy) {
-            boolean placed = placeNewBuyOrders(data, purse);
+            boolean placed = craftStep(data, purse) || placeNewBuyOrders(data, purse);
             if (!placed) {
                 replaceWorstOrderIfWorthwhile(data, purse);
             }
@@ -764,7 +764,9 @@ public class Trader {
             book.tick(data, cfg.taxPercent, 1, now);
             com.exkor.flipbot.flipper.FlipperMod.savePractice();
         }
-        placeNewBuyOrders(data, purse);
+        if (!craftStep(data, purse)) {
+            placeNewBuyOrders(data, purse);
+        }
         beat();
         cleanupGui();
     }
@@ -1630,6 +1632,441 @@ public class Trader {
         return placed > 0;
     }
 
+    // ------------------------------------------------------------------ craft flipper
+
+    private long lastCraftChatAt;
+    private long craftBlockedUntil;
+
+    /** Whether a GUI buy order belongs to the craft batch in progress (never flipped, cancelled or sold). */
+    private boolean craftHeld(String itemName) {
+        return com.exkor.flipbot.craft.CraftBatch.holds(ItemNames.productId(itemName));
+    }
+
+    private Trade craftOrderFor(String itemName) {
+        com.exkor.flipbot.craft.CraftBatch batch = com.exkor.flipbot.craft.CraftBatch.current();
+        if (batch == null) {
+            return null;
+        }
+        for (Trade t : ledger.all()) {
+            if (t.craftIngredient && batch.id.equals(t.craftId)
+                    && (t.state == Trade.State.BUY_OPEN || t.state == Trade.State.FILLED)
+                    && ScreenUtil.sameName(t.displayName, itemName)) {
+                return t;
+            }
+        }
+        return null;
+    }
+
+    private void craftChat(String message) {
+        long now = System.currentTimeMillis();
+        if (now - lastCraftChatAt > 10 * 60_000L) {
+            lastCraftChatAt = now;
+            chat("§6[Crafts] " + message);
+        }
+    }
+
+    /**
+     * One craft flipper step per cycle: start a batch (unlocked recipes only), wait for its ingredient orders,
+     * craft, and hand the result to the normal sell path. Returns true when it used the menus this cycle.
+     */
+    private boolean craftStep(MarketData data, long purse) {
+        if (!cfg.craftFlipping || stopRequested || System.currentTimeMillis() < craftBlockedUntil) {
+            return false;
+        }
+        if (cfg.practiceMode) {
+            return practiceCraftStep(data, purse);
+        }
+        com.exkor.flipbot.craft.CraftBatch batch = com.exkor.flipbot.craft.CraftBatch.current();
+        if (batch == null) {
+            return startCraftBatch(data, purse);
+        }
+        if (batch.state == com.exkor.flipbot.craft.CraftBatch.State.BUYING) {
+            boolean allIn = true;
+            for (Trade t : ledger.all()) {
+                if (!t.craftIngredient || !batch.id.equals(t.craftId)) {
+                    continue;
+                }
+                if (t.state == Trade.State.CANCELLED || t.state == Trade.State.ABANDONED) {
+                    abandonCraftBatch(batch, "the " + t.displayName + " order was cancelled");
+                    return false;
+                }
+                if (t.claimedQty < t.qty) {
+                    allIn = false;
+                }
+            }
+            if (!allIn) {
+                return false;
+            }
+            batch.state = com.exkor.flipbot.craft.CraftBatch.State.CRAFTING;
+            com.exkor.flipbot.craft.CraftBatch.set(batch);
+        }
+        return craftBatchNow(batch, data);
+    }
+
+    /** Picks the best unlocked craft the budget allows and places its ingredient buy orders. */
+    private boolean startCraftBatch(MarketData data, long purse) {
+        if (waitingForBatchToSell() || BazaarDailyLimit.reached() || orderLimitReached) {
+            return false;
+        }
+        if (com.exkor.flipbot.craft.Collections.tiers() == null) {
+            craftChat("§7Collections not read yet - open the Crafts tab and click §fRead collections§7.");
+            return false;
+        }
+        List<com.exkor.flipbot.craft.CraftAnalyzer.Plan> plans = craftPlans(data, purse);
+        if (plans.isEmpty()) {
+            return false;
+        }
+        com.exkor.flipbot.craft.CraftAnalyzer.Plan plan = plans.get(0);
+        com.exkor.flipbot.craft.Recipe recipe = plan.recipe();
+        // The unlock check, once more right before any coin is spent.
+        if (com.exkor.flipbot.craft.Collections.status(recipe, com.exkor.flipbot.craft.Collections.tiers())
+                != com.exkor.flipbot.craft.Collections.Status.UNLOCKED) {
+            return false;
+        }
+        Map<String, Double> prices = new java.util.LinkedHashMap<>();
+        for (String id : recipe.ingredients().keySet()) {
+            prices.put(id, Math.round((data.products.get(id).bestBid + 0.1) * 10.0) / 10.0);
+        }
+        com.exkor.flipbot.craft.CraftBatch batch = com.exkor.flipbot.craft.CraftBatch.create(plan, prices,
+                plan.batchCrafts(), System.currentTimeMillis());
+        com.exkor.flipbot.craft.CraftBatch.set(batch);
+        chat("§6[Crafts] §aStarting: §f" + batch.crafts + "× " + ItemNames.displayName(batch.output)
+                + " §7· ingredients " + ScreenUtil.formatCoins(batch.totalCost)
+                + " §7· expected §a+" + ScreenUtil.formatCoins(batch.expectedProfit));
+        for (Map.Entry<String, Integer> e : recipe.ingredients().entrySet()) {
+            String id = e.getKey();
+            Trade trade = new Trade();
+            trade.productId = id;
+            trade.displayName = ItemNames.displayName(id);
+            trade.qty = batch.needed(id);
+            trade.buyPrice = prices.get(id);
+            trade.cost = trade.qty * trade.buyPrice;
+            trade.craftId = batch.id;
+            trade.craftIngredient = true;
+            trade.createdAt = System.currentTimeMillis();
+            ledger.add(trade);
+            if (!placeBuyOrder(trade, ingredientPlan(trade, data))) {
+                trade.state = Trade.State.ABANDONED;
+                ledger.update(trade);
+                abandonCraftBatch(batch, "the buy order for " + trade.displayName + " failed");
+                craftBlockedUntil = System.currentTimeMillis() + 10 * 60_000L;
+                return true;
+            }
+            trade.state = Trade.State.BUY_OPEN;
+            ledger.update(trade);
+            chat("§6[Crafts] §aBuy Order: §f" + trade.qty + "x " + trade.displayName + " §7@ §f"
+                    + ScreenUtil.formatPrice(trade.buyPrice));
+        }
+        return true;
+    }
+
+    /** Profitable crafts whose recipe is unlocked and whose items have no other open order. */
+    private List<com.exkor.flipbot.craft.CraftAnalyzer.Plan> craftPlans(MarketData data, long purse) {
+        List<com.exkor.flipbot.craft.Recipe> recipes = com.exkor.flipbot.craft.RecipeRepo.recipes();
+        if (recipes.isEmpty()) {
+            com.exkor.flipbot.craft.RecipeRepo.ensure(data.products.keySet());
+            recipes = com.exkor.flipbot.craft.RecipeRepo.recipes();
+        }
+        double budget = Math.min(Math.max(0, purse - cfg.reserveCoins), investRoom());
+        if (budget <= 0) {
+            craftChat("§7No budget for a craft batch right now.");
+            return List.of();
+        }
+        int free = ScreenUtil.freeInventorySlots() - 2; // room for the result
+        int open = cfg.practiceMode ? com.exkor.flipbot.flipper.FlipperMod.practice().openCount() : lastScannedOrderCount;
+        int slots = cfg.maxOrders - open;
+        Set<String> busy = new HashSet<>(scannedOrderProductIds);
+        if (cfg.practiceMode) {
+            busy.addAll(com.exkor.flipbot.flipper.FlipperMod.practice().openProductIds());
+        }
+        Map<String, Integer> tiers = com.exkor.flipbot.craft.Collections.tiers();
+        List<com.exkor.flipbot.craft.CraftAnalyzer.Plan> out = new ArrayList<>();
+        for (com.exkor.flipbot.craft.CraftAnalyzer.Plan p : com.exkor.flipbot.craft.CraftAnalyzer.plans(data, recipes, cfg, budget, Math.max(0, free))) {
+            com.exkor.flipbot.craft.Recipe r = p.recipe();
+            if (p.batchCrafts() < 1 || r.ingredients().size() > slots) {
+                continue;
+            }
+            if (com.exkor.flipbot.craft.Collections.status(r, tiers) != com.exkor.flipbot.craft.Collections.Status.UNLOCKED) {
+                continue;
+            }
+            if (busy.contains(r.output()) || r.ingredients().keySet().stream().anyMatch(busy::contains)
+                    || isBlacklisted(r.output()) || r.ingredients().keySet().stream().anyMatch(this::isBlacklisted)) {
+                continue;
+            }
+            if (r.ingredients().values().stream().anyMatch(n -> (long) n * p.batchCrafts() > 71_680)) {
+                continue; // over Hypixel's per-order maximum
+            }
+            out.add(p);
+        }
+        if (out.isEmpty()) {
+            craftChat("§7No unlocked craft pays right now §8(the Crafts tab shows all of them)§7.");
+        }
+        return out;
+    }
+
+    private FlipAnalyzer.FlipPlan ingredientPlan(Trade trade, MarketData data) {
+        FlipAnalyzer.FlipPlan plan = new FlipAnalyzer.FlipPlan();
+        plan.productId = trade.productId;
+        plan.displayName = trade.displayName;
+        plan.qty = trade.qty;
+        plan.buyPrice = trade.buyPrice;
+        MarketData.Product p = data.products.get(trade.productId);
+        plan.sellPrice = p != null && p.bestAsk > 0 ? Math.round((p.bestAsk - 0.1) * 10.0) / 10.0 : trade.buyPrice;
+        return plan;
+    }
+
+    /** Gives up a batch: its remaining orders go back to normal flipping, bought items stay in the inventory. */
+    private void abandonCraftBatch(com.exkor.flipbot.craft.CraftBatch batch, String why) {
+        for (Trade t : ledger.all()) {
+            if (batch.id.equals(t.craftId) && t.craftIngredient) {
+                t.craftIngredient = false;
+                t.craftId = null;
+                if (t.state == Trade.State.BUY_OPEN) {
+                    t.qty = Math.max(0, t.qty - t.claimedQty);
+                    t.cost = t.qty * t.buyPrice;
+                    t.sellPrice = 0;
+                } else if (t.state != Trade.State.CANCELLED && t.state != Trade.State.ABANDONED) {
+                    t.state = Trade.State.ABANDONED;
+                }
+                ledger.update(t);
+            }
+        }
+        com.exkor.flipbot.craft.CraftBatch.set(null);
+        chat("§6[Crafts] §cBatch stopped: §7" + why + ". Items already bought stay in your inventory.");
+    }
+
+    /**
+     * A claimed-in ingredient order: left-click claims its items into the inventory (never the flip button).
+     * Returns false when the claim did not go through.
+     */
+    private boolean claimCraftIngredient(ScreenUtil.GuiOrder target, Trade trade) {
+        manualClaimFlow = true;
+        boolean clicked = ScreenUtil.clickOrderSlotByIndex(target.slot, target.itemName, false, 0);
+        manualClaimFlow = false;
+        if (!clicked) {
+            return false;
+        }
+        long claimed = waitForClaimedItems(3000);
+        if (claimed <= 0) {
+            return false;
+        }
+        trade.claimedQty += claimed;
+        if (trade.claimedQty >= trade.qty) {
+            trade.state = Trade.State.DONE;
+        }
+        ledger.update(trade);
+        chat("§6[Crafts] §aClaimed: §f" + claimed + "x " + trade.displayName + " §7(" + Math.min(trade.claimedQty, trade.qty)
+                + "/" + trade.qty + ")");
+        return true;
+    }
+
+    /** Count of an item in the player inventory, by SkyBlock id. */
+    private static long countById(String productId) {
+        Long n = ScreenUtil.sync(() -> {
+            net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+            if (mc.player == null) {
+                return 0L;
+            }
+            long total = 0;
+            for (int i = 0; i < 36; i++) {
+                net.minecraft.world.item.ItemStack stack = mc.player.getInventory().getItem(i);
+                if (!stack.isEmpty() && productId.equals(com.exkor.flipbot.flipper.data.SkyblockId.of(stack))) {
+                    total += stack.getCount();
+                }
+            }
+            return total;
+        });
+        return n == null ? 0 : n;
+    }
+
+    /** All ingredients are in: craft with the recipe menu's Supercraft, then list the result. */
+    private boolean craftBatchNow(com.exkor.flipbot.craft.CraftBatch batch, MarketData data) {
+        long possible = batch.crafts;
+        for (Map.Entry<String, Integer> e : batch.perCraft.entrySet()) {
+            possible = Math.min(possible, countById(e.getKey()) / e.getValue());
+        }
+        if (possible <= 0) {
+            abandonCraftBatch(batch, "the ingredients are not in your inventory");
+            return false;
+        }
+        long before = countById(batch.output);
+        int slot = openSupercraft(batch.output);
+        if (slot < 0) {
+            abandonCraftBatch(batch, "the Supercraft button wasn't found (menu logged to config/flipbot/craft-menus.log)");
+            craftBlockedUntil = System.currentTimeMillis() + 30 * 60_000L;
+            return true;
+        }
+        long target = before + possible * batch.outputCount;
+        for (int i = 0; i < possible && !stopRequested; i++) {
+            long was = countById(batch.output);
+            click(slot, 0);
+            long end = System.currentTimeMillis() + 3000;
+            while (System.currentTimeMillis() < end && countById(batch.output) <= was) {
+                sleepOrStop(150);
+            }
+            if (countById(batch.output) <= was) {
+                logCraftMenu("no result after Supercraft click " + (i + 1) + " for " + batch.output);
+                break;
+            }
+            if (countById(batch.output) >= target) {
+                break;
+            }
+            sleepOrStop(ScreenUtil.jitter(350));
+        }
+        cleanupGui();
+        long made = Math.max(0, countById(batch.output) - before);
+        if (made <= 0) {
+            abandonCraftBatch(batch, "crafting didn't produce anything (menu logged to config/flipbot/craft-menus.log)");
+            craftBlockedUntil = System.currentTimeMillis() + 30 * 60_000L;
+            return true;
+        }
+        double crafts = made / (double) batch.outputCount;
+        for (Trade t : ledger.all()) {
+            if (batch.id.equals(t.craftId) && t.craftIngredient && t.state == Trade.State.BUY_OPEN) {
+                t.state = Trade.State.DONE; // claimed in full by now
+                ledger.update(t);
+            }
+        }
+        Trade result = new Trade();
+        result.productId = batch.output;
+        result.displayName = ItemNames.displayName(batch.output);
+        result.qty = made;
+        result.cost = batch.totalCost * Math.min(1.0, crafts / batch.crafts);
+        result.buyPrice = result.cost / made;
+        result.craftId = batch.id;
+        result.state = Trade.State.CLAIMED;
+        result.createdAt = System.currentTimeMillis();
+        ledger.add(result);
+        com.exkor.flipbot.craft.CraftBatch.set(null);
+        chat("§6[Crafts] §aCrafted §f" + made + "x " + result.displayName + " §7· cost "
+                + ScreenUtil.formatCoins(result.cost) + " · listing it");
+        createSellOfferFromInventory(result, data);
+        return true;
+    }
+
+    /** Opens /viewrecipe for the item and returns the Supercraft slot, or -1 (the menu is then logged). */
+    private int openSupercraft(String output) {
+        cleanupGui();
+        sendCommand("viewrecipe " + output);
+        long end = System.currentTimeMillis() + 5000;
+        while (System.currentTimeMillis() < end) {
+            sleepOrStop(200);
+            Integer slot = ScreenUtil.sync(() -> {
+                if (!(net.minecraft.client.Minecraft.getInstance().gui.screen()
+                        instanceof net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?> c)
+                        || !(c.getMenu() instanceof net.minecraft.world.inventory.ChestMenu chest)) {
+                    return null;
+                }
+                for (int i = 0; i < chest.getContainer().getContainerSize(); i++) {
+                    net.minecraft.world.item.ItemStack st = chest.getContainer().getItem(i);
+                    if (!st.isEmpty() && ScreenUtil.cleanName(st.getHoverName().getString()).toLowerCase(java.util.Locale.ROOT)
+                            .contains("supercraft")) {
+                        return i;
+                    }
+                }
+                return -1;
+            });
+            if (slot != null && slot >= 0) {
+                sleepOrStop(ScreenUtil.jitter(300));
+                return slot;
+            }
+        }
+        logCraftMenu("no Supercraft button for " + output);
+        cleanupGui();
+        return -1;
+    }
+
+    /** Writes what the open menu shows (names and descriptions) to craft-menus.log, for tuning. */
+    private void logCraftMenu(String why) {
+        String dump = ScreenUtil.sync(() -> {
+            StringBuilder sb = new StringBuilder();
+            var screen = net.minecraft.client.Minecraft.getInstance().gui.screen();
+            sb.append("screen: ").append(screen == null ? "none" : ScreenUtil.cleanName(screen.getTitle().getString())).append('\n');
+            if (screen instanceof net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?> c
+                    && c.getMenu() instanceof net.minecraft.world.inventory.ChestMenu chest) {
+                for (int i = 0; i < chest.getContainer().getContainerSize(); i++) {
+                    net.minecraft.world.item.ItemStack st = chest.getContainer().getItem(i);
+                    if (st.isEmpty()) {
+                        continue;
+                    }
+                    sb.append("  ").append(i).append(": ").append(ScreenUtil.cleanName(st.getHoverName().getString()));
+                    var lore = st.get(net.minecraft.core.component.DataComponents.LORE);
+                    if (lore != null) {
+                        for (Component line : lore.lines()) {
+                            sb.append(" | ").append(ScreenUtil.cleanName(line.getString()));
+                        }
+                    }
+                    sb.append('\n');
+                }
+            }
+            return sb.toString();
+        });
+        try {
+            java.nio.file.Path file = net.fabricmc.loader.api.FabricLoader.getInstance().getConfigDir()
+                    .resolve("flipbot").resolve("craft-menus.log");
+            java.nio.file.Files.createDirectories(file.getParent());
+            java.nio.file.Files.writeString(file, java.time.LocalDateTime.now() + "  " + why + "\n" + dump,
+                    java.nio.charset.StandardCharsets.UTF_8, java.nio.file.StandardOpenOption.CREATE,
+                    java.nio.file.StandardOpenOption.APPEND);
+        } catch (Exception ignored) {
+        }
+        log("Craft: " + why);
+    }
+
+    /**
+     * Practice: walks the real menus (each ingredient's buy order up to the confirm screen, then the recipe menu's
+     * Supercraft button), places nothing, and simulates the batch in the practice book.
+     */
+    private boolean practiceCraftStep(MarketData data, long purse) {
+        PracticeBook book = com.exkor.flipbot.flipper.FlipperMod.practice();
+        if (book.openCraft() != null || waitingForBatchToSell()) {
+            return false;
+        }
+        if (com.exkor.flipbot.craft.Collections.tiers() == null) {
+            craftChat("§7Collections not read yet - open the Crafts tab and click §fRead collections§7.");
+            return false;
+        }
+        List<com.exkor.flipbot.craft.CraftAnalyzer.Plan> plans = craftPlans(data, purse);
+        if (plans.isEmpty()) {
+            return false;
+        }
+        com.exkor.flipbot.craft.CraftAnalyzer.Plan plan = plans.get(0);
+        com.exkor.flipbot.craft.Recipe recipe = plan.recipe();
+        if (com.exkor.flipbot.craft.Collections.status(recipe, com.exkor.flipbot.craft.Collections.tiers())
+                != com.exkor.flipbot.craft.Collections.Status.UNLOCKED) {
+            return false;
+        }
+        Map<String, Double> prices = new java.util.LinkedHashMap<>();
+        for (Map.Entry<String, Integer> e : recipe.ingredients().entrySet()) {
+            String id = e.getKey();
+            prices.put(id, Math.round((data.products.get(id).bestBid + 0.1) * 10.0) / 10.0);
+            Trade dry = new Trade();
+            dry.productId = id;
+            dry.displayName = ItemNames.displayName(id);
+            dry.qty = (long) e.getValue() * plan.batchCrafts();
+            dry.buyPrice = prices.get(id);
+            if (!placeBuyOrder(dry, ingredientPlan(dry, data))) {
+                chat("§6[Crafts] §d[Practice] §cMenu walk failed: §f" + dry.displayName);
+                craftBlockedUntil = System.currentTimeMillis() + 10 * 60_000L;
+                return true;
+            }
+        }
+        int slot = openSupercraft(recipe.output());
+        cleanupGui();
+        if (slot < 0) {
+            chat("§6[Crafts] §d[Practice] §cNo Supercraft button in /viewrecipe " + recipe.output()
+                    + " §8(logged to config/flipbot/craft-menus.log)");
+            craftBlockedUntil = System.currentTimeMillis() + 30 * 60_000L;
+            return true;
+        }
+        book.recordCraft(recipe.output(), ItemNames.displayName(recipe.output()), recipe.outputCount(),
+                plan.batchCrafts(), recipe.ingredients(), prices, System.currentTimeMillis());
+        com.exkor.flipbot.flipper.FlipperMod.savePractice();
+        chat("§6[Crafts] §d[Practice] §aBatch: §f" + plan.batchCrafts() + "× " + ItemNames.displayName(recipe.output())
+                + " §7· expected §a+" + ScreenUtil.formatCoins(plan.batchProfit()) + " §8(nothing bought)");
+        return true;
+    }
+
     private long lastBudgetChatAt;
     private long lastBatchWaitChatAt;
     private long lastFloorChatAt;
@@ -1809,7 +2246,7 @@ public class Trader {
         ScreenUtil.GuiOrder worst = null;
         double worstScore = Double.MAX_VALUE;
         for (ScreenUtil.GuiOrder order : lastScannedBuyOrders) {
-            if (!BazaarLimits.itemModeAllowsOrder(cfg, order.itemName)) {
+            if (!BazaarLimits.itemModeAllowsOrder(cfg, order.itemName) || craftHeld(order.itemName)) {
                 continue; // item mode: orders of other items are never cancelled
             }
             double score = buyOrderExpectedProfit(order);
@@ -2002,7 +2439,7 @@ public class Trader {
         List<Trade> batchCancel = new ArrayList<>();
         Set<ScreenUtil.GuiOrder> handled = Collections.newSetFromMap(new java.util.IdentityHashMap<>());
         for (List<ScreenUtil.GuiOrder> group : buyGroups.values()) {
-            if (group.size() <= 1 || !BazaarLimits.itemModeAllowsOrder(cfg, group.get(0).itemName)) {
+            if (group.size() <= 1 || !BazaarLimits.itemModeAllowsOrder(cfg, group.get(0).itemName) || craftHeld(group.get(0).itemName)) {
                 continue;
             }
             group.sort(Comparator.comparingDouble(o -> o.unitPrice));
@@ -2021,7 +2458,7 @@ public class Trader {
             if (handled.contains(order)) {
                 continue;
             }
-            boolean mayCancel = BazaarLimits.itemModeAllowsOrder(cfg, order.itemName);
+            boolean mayCancel = BazaarLimits.itemModeAllowsOrder(cfg, order.itemName) && !craftHeld(order.itemName);
             MarketData.Product product = productFor(order.itemName);
             boolean outdated = mayCancel && product != null && product.bestBid > order.unitPrice + 0.05;
             boolean unprofitable = mayCancel && isBuyOrderUnprofitable(order);
@@ -2491,9 +2928,18 @@ public class Trader {
             cleanupGui();
             return true;
         }
+        Trade craftOrder = craftOrderFor(order.itemName);
+        if (craftOrder != null) {
+            // Craft ingredient: claim into the inventory, never flip, cancel or sell.
+            if (target.claimable > 0 || (target.amount > 0 && target.filled >= target.amount)) {
+                claimCraftIngredient(target, craftOrder);
+            }
+            cleanupGui();
+            return true;
+        }
         MarketData.Product product = productFor(order.itemName);
         // Item mode: orders of items that are not listed are only claimed, never cancelled.
-        boolean mayCancel = BazaarLimits.itemModeAllowsOrder(cfg, order.itemName);
+        boolean mayCancel = BazaarLimits.itemModeAllowsOrder(cfg, order.itemName) && !craftHeld(order.itemName);
         boolean outdated = mayCancel && product != null && product.bestBid > order.unitPrice + 0.05;
         boolean unprofitable = mayCancel && isBuyOrderUnprofitable(order);
         boolean fullyFilled = target.filled >= target.amount && target.amount > 0;
@@ -3302,6 +3748,9 @@ public class Trader {
         }
         long now = System.currentTimeMillis();
         for (Map.Entry<String, Long> entry : counts.entrySet()) {
+            if (com.exkor.flipbot.craft.CraftBatch.holds(entry.getKey())) {
+                continue; // ingredients waiting to be crafted
+            }
             MarketData.Product product = data.products.get(entry.getKey());
             if (product == null || product.bestAsk <= 0) {
                 continue;
@@ -3360,6 +3809,9 @@ public class Trader {
                 }
                 trade.lastRelistedAt = nowMs;
                 ledger.update(trade);
+                if (trade.craftIngredient) {
+                    continue; // held for a craft
+                }
                 if (ScreenUtil.countItemsInInventory(trade.displayName) <= 0) {
                     ;
                     trade.state = Trade.State.ABANDONED;
@@ -3416,7 +3868,7 @@ public class Trader {
             used.add(match);
             trade.notFoundChecks = 0;
             trade.filledQty = match.filled;
-            if (trade.state == Trade.State.BUY_OPEN && match.filled >= match.amount && match.amount > 0) {
+            if (trade.state == Trade.State.BUY_OPEN && !trade.craftIngredient && match.filled >= match.amount && match.amount > 0) {
                 trade.state = Trade.State.FILLED;
                 trade.filledAt = System.currentTimeMillis();
                 chat("\u00a76[Flipper] \u00a7aBuy order filled: \u00a7f" + trade.qty + "x " + trade.displayName);
@@ -3492,6 +3944,14 @@ public class Trader {
                 }
                 case BUY_FILLED -> {
                     Trade trade = ledger.firstMatching(event.item, Trade.State.BUY_OPEN);
+                    if (trade != null && trade.craftIngredient) {
+                        recentFillChat = true; // claimed by the next order scan, never flipped
+                        if (event.qty > 0) {
+                            trade.filledQty = event.qty;
+                        }
+                        ledger.update(trade);
+                        break;
+                    }
                     if (trade != null) {
                         trade.state = Trade.State.FILLED;
                         trade.filledAt = System.currentTimeMillis();
@@ -3542,6 +4002,9 @@ public class Trader {
                         break;
                     }
                     Trade trade = ledger.firstMatching(event.item, Trade.State.FILLED);
+                    if (trade != null && trade.craftIngredient) {
+                        break;
+                    }
                     if (trade != null) {
                         trade.state = Trade.State.CLAIMED;
                         ledger.update(trade);

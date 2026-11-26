@@ -464,6 +464,15 @@ class FlipBotScreen : UiScreen("FlipBot") {
         if (!onSb && inside(x + w - rw - 6 - sw, y - 1, sw, 16)) tip("Join SkyBlock to read your collections")
         y += 24
 
+        val active = CraftFlipper.activeSummary()
+        val line = when {
+            active != null -> active
+            cfg.craftFlipping -> "Craft flipping is on · a batch starts when the bot runs"
+            else -> "Craft flipping is off · turn it on in Settings"
+        }
+        text(fit(line, 6.8f, w.toFloat()), x, y, 6.8f, if (active != null) Theme.GOOD else Theme.SUB)
+        y += 16
+
         val plans = CraftFlipper.plans()
         if (plans.isEmpty()) {
             text(CraftFlipper.status().ifEmpty { "Loading…" }, x, y + 4, 7f, Theme.SUB)
@@ -523,6 +532,8 @@ class FlipBotScreen : UiScreen("FlipBot") {
             Section("Mode", listOf(
                 Toggle("Practice mode", "Walk the menus up to the confirm screen and simulate the order. Nothing is placed.",
                     { cfg.practiceMode }, { on -> setPractice(on, false) }),
+                Toggle("Craft flipping", "Buy ingredients with buy orders, craft them and sell the result. Only recipes your collections have unlocked; runs while the bot runs.",
+                    { cfg.craftFlipping }, { cfg.craftFlipping = it }),
             )),
             Section("Money", listOf(
                 Toggle("Trade only with profit", "The bot never has more coins in the Bazaar than the profit it has made. Your own coins are never used.",
