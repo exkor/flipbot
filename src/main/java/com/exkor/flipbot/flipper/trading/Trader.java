@@ -1897,6 +1897,13 @@ public class Trader {
             craftBlockedUntil = System.currentTimeMillis() + 30 * 60_000L;
             return true;
         }
+        if (supercraftMissing(slot)) {
+            logCraftMenu("Supercraft says missing ingredients for " + batch.output);
+            cleanupGui();
+            abandonCraftBatch(batch, "Supercraft says ingredients are missing");
+            craftBlockedUntil = System.currentTimeMillis() + 30 * 60_000L;
+            return true;
+        }
         long target = before + possible * batch.outputCount;
         for (int i = 0; i < possible && !stopRequested; i++) {
             long was = countById(batch.output);
@@ -1987,6 +1994,28 @@ public class Trader {
         logCraftMenu("no Supercraft button for " + output);
         cleanupGui();
         return -1;
+    }
+
+    /** The Supercraft button's description says "Missing ingredients!" (nothing can be crafted). */
+    private static boolean supercraftMissing(int slot) {
+        Boolean missing = ScreenUtil.sync(() -> {
+            if (!(net.minecraft.client.Minecraft.getInstance().gui.screen()
+                    instanceof net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?> c)
+                    || !(c.getMenu() instanceof net.minecraft.world.inventory.ChestMenu chest)) {
+                return false;
+            }
+            var lore = chest.getContainer().getItem(slot).get(net.minecraft.core.component.DataComponents.LORE);
+            if (lore == null) {
+                return false;
+            }
+            for (Component line : lore.lines()) {
+                if (ScreenUtil.cleanName(line.getString()).toLowerCase(java.util.Locale.ROOT).contains("missing ingredients")) {
+                    return true;
+                }
+            }
+            return false;
+        });
+        return Boolean.TRUE.equals(missing);
     }
 
     /** Writes what the open menu shows (names and descriptions) to craft-menus.log, for tuning. */
