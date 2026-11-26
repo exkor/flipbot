@@ -1228,6 +1228,20 @@ public class Trader {
                 return true;
             }
         }
+        // The item may be listed under its other (older or newer) name.
+        if (productId != null) {
+            for (String alias : ItemNames.aliases(productId)) {
+                if (alias.equalsIgnoreCase(displayName) || alias.equalsIgnoreCase(cleaned)) {
+                    continue;
+                }
+                log("Search attempt with the other name: " + alias);
+                if (searchProductOnce(alias, productId)) {
+                    cfg.searchNameOverrides.put(displayName, alias);
+                    cfg.save();
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -1238,6 +1252,13 @@ public class Trader {
             return false;
         }
         String expected = productId != null ? ItemNames.displayName(productId) : fallbackName;
+        if (productId != null) {
+            for (String alias : ItemNames.aliases(productId)) {
+                if (ScreenUtil.sameName(actual, alias)) {
+                    return true;
+                }
+            }
+        }
         if (!ScreenUtil.sameName(actual, expected)) {
             log("Wrong product page: expected='" + expected + "' actual='" + actual + "'");
             return false;

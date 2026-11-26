@@ -11,8 +11,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ItemNames {
-    private static final Map<String, String> PRODUCT_TO_NAME = new HashMap<>();
-    private static final Map<String, String> NAME_TO_PRODUCT = new HashMap<>();
+    private static final Map<String, String> PRODUCT_TO_NAME = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final Map<String, String> NAME_TO_PRODUCT = new java.util.concurrent.ConcurrentHashMap<>();
+    /** Current in-game names from the NEU repo, where they differ from the bundled list (which is older). */
+    private static final Map<String, String> REPO_NAMES = new java.util.concurrent.ConcurrentHashMap<>();
 
     public static String nameKey(String name) {
         if (name == null) {
@@ -26,6 +28,7 @@ public class ItemNames {
 
     public static void load() {
         PRODUCT_TO_NAME.clear();
+        REPO_NAMES.clear();
         NAME_TO_PRODUCT.clear();
         try (InputStream in = ItemNames.class.getResourceAsStream("/assets/flipbot/bazaar-resources.json")) {
             if (in == null) {
@@ -54,7 +57,50 @@ public class ItemNames {
         return java.util.Collections.unmodifiableMap(PRODUCT_TO_NAME);
     }
 
+    /**
+     * Takes the current names from the NEU repo (id -> name with colour codes). A name that differs only in symbols
+     * keeps the bundled one; the old name stays as an alias, so either one is found.
+     */
+    public static void setRepoNames(Map<String, String> names) {
+        if (PRODUCT_TO_NAME.isEmpty()) {
+            load();
+        }
+        for (Map.Entry<String, String> e : names.entrySet()) {
+            String clean = cleanRepoName(e.getValue());
+            if (clean.isEmpty()) {
+                continue;
+            }
+            String old = PRODUCT_TO_NAME.get(e.getKey());
+            if (old != null && nameKey(old).equals(nameKey(clean))) {
+                continue;
+            }
+            REPO_NAMES.put(e.getKey(), clean);
+            NAME_TO_PRODUCT.put(clean.toLowerCase(), e.getKey());
+            NAME_TO_PRODUCT.put(nameKey(clean), e.getKey());
+        }
+    }
+
+    /** "§fEnchanted Gold Ingot" -> "Enchanted Gold Ingot"; drops colour codes and private-use glyphs. */
+    static String cleanRepoName(String raw) {
+        return raw == null ? "" : raw.replaceAll("§.", "").replaceAll("\\p{Co}", "").trim().replaceAll("\\s+", " ");
+    }
+
+    /** Every name this item may show under: the current one first, then the bundled one. */
+    public static java.util.List<String> aliases(String productId) {
+        java.util.LinkedHashSet<String> out = new java.util.LinkedHashSet<>();
+        out.add(displayName(productId));
+        String old = PRODUCT_TO_NAME.get(productId);
+        if (old != null) {
+            out.add(old);
+        }
+        return java.util.List.copyOf(out);
+    }
+
     public static String displayName(String productId) {
+        String repo = REPO_NAMES.get(productId);
+        if (repo != null) {
+            return repo;
+        }
         String mapped = PRODUCT_TO_NAME.get(productId);
         if (mapped != null) {
             return mapped;

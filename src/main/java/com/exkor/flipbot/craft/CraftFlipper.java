@@ -61,6 +61,15 @@ public final class CraftFlipper {
     }
 
     public static void init() {
+        // Current item names (and recipes) from the cache, or the weekly download: the Bazaar search uses them.
+        Thread.ofVirtual().name("flipbot-names").start(() -> {
+            try {
+                MarketData data = BazaarApi.fetch();
+                if (data != null && !data.products.isEmpty()) RecipeRepo.ensure(data.products.keySet());
+            } catch (Exception e) {
+                System.out.println("[FlipBot] item names not loaded: " + e.getMessage());
+            }
+        });
         ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
             if (overlay || message == null) return;
             for (String line : ScreenUtil.cleanName(message.getString()).split("\n")) {
